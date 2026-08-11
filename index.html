@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+<title>The Conversion · Season 2: The Depths</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --cave:#060508;--cave2:#09070e;--gold:#c9a84c;--gold2:#e8c860;
+  --purple:#9080c0;--pur2:#b0a0d8;--red:#c84848;--green:#58c870;
+  --text:#c0c8d8;--text2:#9098b0;
+}
+html,body{height:100%;overflow:hidden}
+body{background:var(--cave);color:var(--text);font-family:'Rajdhani',sans-serif;display:flex;flex-direction:column}
+
+/* HEADER */
+.hdr{background:#070510;border-bottom:1px solid #1c1230;padding:7px 16px;display:flex;align-items:center;gap:14px;flex-shrink:0;flex-wrap:wrap}
+.htitle{font-family:'Cinzel',serif;font-size:1.2rem;font-weight:900;color:var(--gold);letter-spacing:.06em}
+.hseason{font-family:'Cinzel',serif;font-size:.54rem;letter-spacing:.22em;color:var(--purple);text-transform:uppercase}
+.hstats{display:flex;gap:14px;margin-left:auto}
+.hstat{display:flex;flex-direction:column;align-items:center}
+.hstat-v{font-family:'Cinzel',serif;font-size:1rem;font-weight:700;color:var(--gold);line-height:1}
+.hstat-l{font-size:.5rem;color:var(--purple);letter-spacing:.12em;text-transform:uppercase}
+.hlive{display:flex;align-items:center;gap:5px;background:rgba(200,72,72,.12);border:1px solid rgba(200,72,72,.4);padding:3px 9px;font-size:.6rem;letter-spacing:.1em;color:var(--red);font-weight:700}
+.ldot{width:6px;height:6px;background:var(--red);border-radius:50%;animation:blink 1.3s ease infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* MAP */
+#map-wrap{flex:1;position:relative;overflow:hidden;background:radial-gradient(ellipse at 50% 40%,#090610,#040306);touch-action:none}
+#map-wrap.drag{cursor:grabbing}
+#map-cont{position:absolute;top:0;left:0;width:100%;height:100%;transform-origin:0 0;will-change:transform}
+#map{width:100%;height:100%}
+.zoom-ctrl{position:absolute;top:10px;right:10px;display:flex;flex-direction:column;gap:4px;z-index:20}
+.zbtn{width:34px;height:34px;background:#0e0a1c;border:1px solid #3a2868;color:var(--gold);font-size:1.1rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.zbtn:hover{background:#1a1038}
+.zhint{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);font-size:.56rem;color:var(--purple);white-space:nowrap;pointer-events:none;letter-spacing:.05em}
+
+/* CTRL BAR */
+.ctrl{background:#07050e;border-top:1px solid #1a1230;padding:6px 12px;display:flex;gap:6px;flex-shrink:0;align-items:center;justify-content:center}
+.cbtn{padding:7px 14px;font-family:'Cinzel',serif;font-size:.58rem;letter-spacing:.1em;cursor:pointer;border:1px solid;text-transform:uppercase;background:transparent}
+.cbtn:hover{opacity:.8}
+.cb-t{color:var(--pur2);border-color:var(--pur2)}.cb-t:hover{background:#14102a}
+.cb-b{color:#e87040;border-color:#e87040}.cb-b:hover{background:#1a0e08}
+.cb-g{color:var(--gold);border-color:var(--gold)}.cb-g:hover{background:#1a1008}
+.cb-e{color:var(--green);border-color:var(--green)}.cb-e:hover{background:#0a1a08}
+.cb-cnt{background:var(--pur2);color:#050408;border-radius:50%;width:16px;height:16px;font-size:.52rem;display:flex;align-items:center;justify-content:center;font-weight:900}
+
+/* SLIDE PANELS */
+.spanel{position:fixed;bottom:0;left:0;right:0;background:#09070e;border-top:1px solid #2a1848;z-index:60;transform:translateY(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);max-height:55vh;display:flex;flex-direction:column}
+.spanel.open{transform:translateY(0)}
+.sp-head{display:flex;align-items:center;padding:8px 14px 6px;border-bottom:1px solid #14103a;flex-shrink:0;gap:10px}
+.sp-bar{width:34px;height:3px;background:#3a2868;border-radius:2px}
+.sp-title{font-family:'Cinzel',serif;font-size:.6rem;letter-spacing:.22em;color:var(--purple);text-transform:uppercase;flex:1}
+.sp-close{background:none;border:none;color:var(--purple);font-size:.95rem;cursor:pointer;padding:2px 6px}
+.sp-body{flex:1;overflow-y:auto;padding:10px 14px}
+
+/* TRIBUTE CARDS */
+.tscroll{overflow-x:auto;overflow-y:hidden;display:flex;gap:8px;padding:4px 2px 8px;flex-shrink:0;scrollbar-width:thin;scrollbar-color:#2a2050 var(--cave2)}
+.tc{background:#0c0a14;border:1px solid #1e1438;border-top:3px solid var(--tc);padding:10px 10px 8px;min-width:105px;cursor:pointer;flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:5px}
+.tc:hover{background:#160e2a}
+.tc.eliminated{opacity:.35;filter:grayscale(.6);cursor:default}
+.tc-av{width:36px;height:36px;border-radius:50%;background:var(--tc);display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;font-size:.68rem;font-weight:900;color:#050408}
+.tc-img{width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid var(--tc)}
+.tc-name{font-family:'Cinzel',serif;font-size:.62rem;font-weight:700;color:#c0b8d8;text-align:center;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tc-st{font-size:.5rem;padding:1px 6px;font-weight:700;text-transform:uppercase}
+.st-alive{background:rgba(88,200,112,.18);color:#60d870;border:1px solid rgba(88,200,112,.35)}
+.st-injured{background:rgba(200,120,0,.18);color:#d08030;border:1px solid rgba(200,120,0,.4)}
+.tc-bars{width:100%;display:flex;flex-direction:column;gap:2px}
+.tc-bar-r{display:flex;align-items:center;gap:3px}
+.tc-bar-l{font-size:.48rem;color:var(--purple);width:8px;text-align:right}
+.tc-bar-t{flex:1;height:4px;background:#0a0818;border-radius:1px;overflow:hidden}
+.tc-bar-f{height:100%;border-radius:1px}
+.tbf{background:linear-gradient(90deg,#7a3810,#e07020)}
+.tbw{background:linear-gradient(90deg,#082848,#2068d0)}
+.tbs{background:linear-gradient(90deg,#200e48,#6838c8)}
+.tb-dng{background:linear-gradient(90deg,#600808,#d01818)!important;animation:dp .9s ease infinite}
+@keyframes dp{0%,100%{opacity:1}50%{opacity:.5}}
+.fallen-r{display:flex;gap:5px;flex-wrap:wrap;padding-top:8px;border-top:1px solid #14103a;margin-top:4px}
+.fallen-h{font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:.2em;color:#a06080;text-transform:uppercase;width:100%;margin-bottom:3px}
+.fchip{font-size:.6rem;color:#a07090;padding:2px 6px;background:#0a0610;border:1px solid #2a1828;text-decoration:line-through;text-decoration-color:#6a3050}
+
+/* EVENTS LIST */
+.ev-it{display:flex;align-items:flex-start;gap:8px;padding:8px 0;border-bottom:1px solid #14103a}
+.ev-it:last-child{border-bottom:none}
+.ev-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.ev-txt{flex:1;font-size:.78rem;color:var(--text);line-height:1.4}
+.ev-time{font-size:.62rem;color:var(--purple);white-space:nowrap;margin-top:2px}
+
+/* PLAYER MODAL */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:100;display:none;align-items:center;justify-content:center}
+.ov.open{display:flex;animation:fi .2s ease}
+@keyframes fi{from{opacity:0}to{opacity:1}}
+.modal{background:#0e0a1c;border:1px solid #3a2868;width:340px;max-width:92vw;overflow:hidden;position:relative;animation:su .25s ease}
+@keyframes su{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+.m-head{padding:16px 18px 12px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #20183a}
+.m-av{width:50px;height:50px;border-radius:50%;background:var(--mc);display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;font-size:.95rem;font-weight:900;color:#050408;flex-shrink:0;box-shadow:0 0 18px var(--mc)}
+.m-av-img{width:50px;height:50px;border-radius:50%;object-fit:cover;border:2px solid var(--mc);box-shadow:0 0 18px var(--mc)}
+.m-info{flex:1}.m-name{font-family:'Cinzel',serif;font-size:1rem;font-weight:900;color:var(--gold2);margin-bottom:3px}
+.m-zone{font-size:.72rem;color:var(--pur2);margin-bottom:4px}
+.m-badges{display:flex;gap:4px;flex-wrap:wrap}
+.xbtn{position:absolute;top:10px;right:12px;background:none;border:none;color:var(--purple);font-size:1rem;cursor:pointer;padding:4px 8px}
+.xbtn:hover{color:var(--text)}
+.badge{font-size:.5rem;letter-spacing:.05em;padding:2px 5px;font-weight:700;text-transform:uppercase}
+.b-alive{background:rgba(88,200,112,.18);color:#60d870;border:1px solid rgba(88,200,112,.35)}
+.b-injured{background:rgba(200,120,0,.18);color:#d08030;border:1px solid rgba(200,120,0,.4)}
+.b-ally{background:rgba(201,168,76,.12);color:var(--gold);border:1px solid rgba(201,168,76,.3)}
+.m-bars{padding:12px 18px;border-bottom:1px solid #18143a}
+.m-bar-r{margin-bottom:8px}
+.m-bar-top{display:flex;justify-content:space-between;margin-bottom:2px}
+.m-bar-lbl{font-family:'Cinzel',serif;font-size:.62rem;color:var(--pur2);font-weight:700}
+.m-bar-pct{font-family:'Cinzel',serif;font-size:.75rem;color:var(--gold);font-weight:700}
+.m-track{height:8px;background:#0a0818;border-radius:2px;overflow:hidden}
+.m-fill{height:100%;border-radius:2px;width:0;transition:width 1.2s ease}
+.m-fill.food{background:linear-gradient(90deg,#7a3810,#e07020)}
+.m-fill.water{background:linear-gradient(90deg,#082848,#2068d0)}
+.m-fill.sleep{background:linear-gradient(90deg,#200e48,#6838c8)}
+.m-fill.dng{background:linear-gradient(90deg,#600808,#d01818)!important;animation:dp 1s ease infinite}
+.m-stats{padding:10px 18px 14px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.mstat{background:#0a0818;padding:7px 10px;text-align:center}
+.mstat-v{font-family:'Cinzel',serif;font-size:.85rem;font-weight:700;color:var(--gold);line-height:1}
+.mstat-l{font-size:.55rem;color:var(--purple);letter-spacing:.08em;text-transform:uppercase;margin-top:2px}
+
+/* ZONE PANEL */
+.zov{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:110;display:none;align-items:flex-end;justify-content:center;padding-bottom:52px}
+.zov.open{display:flex;animation:fi .2s ease}
+.zpanel{background:#0c0818;border:1px solid #3a2868;width:min(480px,95vw);max-height:72vh;overflow-y:auto;animation:su .25s ease}
+.zphoto{width:100%;height:120px;object-fit:cover;display:block}
+.znophoto{width:100%;height:70px;background:linear-gradient(135deg,#0c0818,#1a1030);display:flex;align-items:center;justify-content:center;font-size:2rem;opacity:.3}
+.zhead{padding:12px 16px 8px;border-bottom:1px solid #20183a;display:flex;align-items:flex-start;gap:10px}
+.znum{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;font-size:.9rem;font-weight:900;flex-shrink:0}
+.zname{font-family:'Cinzel',serif;font-size:.95rem;font-weight:900;color:var(--gold2);margin-bottom:2px}
+.zflavor{font-size:.72rem;color:var(--pur2);line-height:1.4;font-style:italic}
+.zbonus{margin:10px 16px;padding:10px 13px;border-left:3px solid var(--bc)}
+.zbonus-lbl{font-family:'Cinzel',serif;font-size:.52rem;letter-spacing:.22em;color:var(--bc);text-transform:uppercase;margin-bottom:4px}
+.zbonus-txt{font-size:.85rem;color:var(--text);font-weight:700;margin-bottom:3px}
+.zbonus-note{font-size:.7rem;color:var(--pur2)}
+.ztribs{padding:6px 16px 12px;border-top:1px solid #16103a}
+.ztribs-lbl{font-family:'Cinzel',serif;font-size:.52rem;letter-spacing:.18em;color:var(--purple);text-transform:uppercase;margin-bottom:5px}
+.ztrib-list{display:flex;gap:6px;flex-wrap:wrap}
+.ztrib-chip{display:flex;align-items:center;gap:4px;background:#0c0a14;border:1px solid #1e1638;padding:3px 9px;cursor:pointer}
+.ztrib-chip:hover{background:#18103a}
+.zdot{width:8px;height:8px;border-radius:50%}
+.ztrib-name{font-size:.7rem;color:var(--text2)}
+.znobody{font-size:.72rem;color:var(--purple);font-style:italic}
+
+/* CANNON */
+.cannon{position:fixed;inset:0;background:rgba(0,0,0,.96);z-index:200;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;cursor:pointer}
+.cannon.go{display:flex;animation:fi .3s ease}
+.cannon-skull{font-size:5rem;animation:pop .5s ease;margin-bottom:16px}
+@keyframes pop{0%{transform:scale(0)}70%{transform:scale(1.2)}100%{transform:scale(1)}}
+.cannon-title{font-family:'Cinzel',serif;font-size:2.2rem;font-weight:900;color:var(--red);letter-spacing:.15em;animation:zin .5s ease .2s both}
+@keyframes zin{from{transform:scale(.5);opacity:0}to{transform:scale(1);opacity:1}}
+.cannon-name{font-family:'Cinzel',serif;font-size:1.6rem;font-weight:700;color:var(--gold2);margin:10px 0 6px;animation:zin .5s ease .5s both}
+.cannon-cause{font-size:.88rem;color:var(--pur2);letter-spacing:.1em;animation:zin .4s ease .8s both}
+.cannon-bar{height:3px;background:var(--red);position:absolute;bottom:0;left:0;animation:shrink 5s linear forwards}
+@keyframes shrink{from{width:100%}to{width:0%}}
+
+/* BATTLE PANEL */
+.bov{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:150;display:none;align-items:center;justify-content:center}
+.bov.open{display:flex}
+.bpanel{background:#0c0818;border:1px solid #3a1808;width:min(660px,94vw);max-height:90vh;overflow-y:auto}
+.bpanel-head{background:#1a0e08;padding:14px 20px;border-bottom:1px solid #3a1808;display:flex;justify-content:space-between;align-items:center}
+.bpanel-title{font-family:'Cinzel',serif;font-size:1rem;font-weight:900;color:#e87040;letter-spacing:.1em}
+.matchups{padding:12px 16px;display:flex;flex-direction:column;gap:8px}
+.matchup{background:#0e0a18;border:1px solid #2a1828;padding:11px 14px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px}
+.ally-matchup{border-color:#3a2868!important}
+.ally-matchup .mu-p{align-items:flex-start!important}
+.mu-p{display:flex;flex-direction:column;align-items:center;gap:3px}
+.mu-av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;font-size:.7rem;font-weight:900;color:#050408}
+.mu-name{font-family:'Cinzel',serif;font-size:.75rem;color:#c0b8d8;font-weight:700;text-align:center}
+.mu-alp{font-size:.68rem;color:var(--gold);text-align:center}
+.mu-win{font-size:.6rem;color:var(--green);text-align:center;margin-top:2px;font-weight:700}
+.mu-vs{font-family:'Cinzel',serif;font-size:.9rem;font-weight:900;color:#c84020;text-align:center}
+
+/* GAMEMAKER */
+.gm-panel{position:fixed;right:0;top:0;height:100vh;width:265px;background:#08050e;border-left:1px solid #2a1848;z-index:170;transform:translateX(100%);transition:transform .3s ease;display:flex;flex-direction:column}
+.gm-panel.open{transform:translateX(0)}
+.gm-head{background:#100820;padding:13px 15px;border-bottom:1px solid #1e1430;display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
+.gm-title{font-family:'Cinzel',serif;font-size:.78rem;font-weight:900;color:var(--gold);letter-spacing:.1em}
+.gm-body{flex:1;overflow-y:auto;padding:13px 15px}
+.gm-sec{margin-bottom:16px}
+.gm-sec-t{font-family:'Cinzel',serif;font-size:.54rem;letter-spacing:.2em;color:var(--purple);text-transform:uppercase;margin-bottom:6px;padding-bottom:3px;border-bottom:1px solid #1a1230}
+.gm-sel{width:100%;background:#0e0a18;border:1px solid #2a1848;color:var(--text);font-family:'Rajdhani',sans-serif;font-size:.8rem;padding:5px 7px;margin-bottom:5px}
+.gm-sel option{background:#0e0a18}
+.gm-act{width:100%;padding:7px;font-family:'Cinzel',serif;font-size:.62rem;letter-spacing:.1em;font-weight:700;cursor:pointer;border:none;text-transform:uppercase;margin-bottom:5px}
+.gm-act:hover{opacity:.8}
+.gm-red{background:#5a0808;color:#f06060}.gm-gold{background:#3a2800;color:var(--gold)}
+.gm-purple{background:#1a1038;color:#9070d0}.gm-green{background:#0a2010;color:#50c070}
+.pin-wrap{padding:22px 15px;text-align:center}
+.pin-title{font-family:'Cinzel',serif;font-size:.76rem;color:var(--gold);margin-bottom:4px;letter-spacing:.1em}
+.pin-sub{font-size:.68rem;color:var(--purple);margin-bottom:12px}
+.pin-inp{width:100%;background:#0e0a18;border:1px solid #2a1848;color:var(--gold);font-family:'Cinzel',serif;font-size:1.1rem;padding:8px;text-align:center;letter-spacing:.3em;margin-bottom:7px;outline:none}
+.pin-btn{width:100%;padding:8px;background:#1a0e38;border:1px solid #3a2868;color:var(--gold);font-family:'Cinzel',serif;font-size:.7rem;letter-spacing:.2em;cursor:pointer;text-transform:uppercase}
+.pin-btn:hover{background:#2a1848}
+.pin-err{color:var(--red);font-size:.66rem;margin-top:4px;display:none}
+
+/* TOAST */
+.toast{position:fixed;bottom:60px;left:50%;transform:translateX(-50%);background:#0e0a1c;border:1px solid var(--gold);padding:11px 18px;max-width:440px;width:90%;z-index:160;display:none;text-align:center;cursor:pointer}
+.toast-title{font-family:'Cinzel',serif;font-size:.58rem;letter-spacing:.2em;color:var(--gold);margin-bottom:4px}
+.toast-msg{font-size:.8rem;color:var(--text);line-height:1.5}
+
+/* NIGHTLY ANNOUNCEMENT */
+.nightly{position:fixed;inset:0;background:#000;z-index:300;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;overflow:hidden;cursor:pointer}
+.nightly.go{display:flex;animation:fi .3s ease}
+.nstars{position:absolute;inset:0;pointer-events:none}
+.nstar{position:absolute;border-radius:50%;animation:twinkle var(--d) ease-in-out infinite;animation-delay:var(--dl)}
+@keyframes twinkle{0%,100%{opacity:.2}50%{opacity:1}}
+.n-inner{position:relative;z-index:1;padding:20px;max-width:700px;width:95%}
+.n-eye{font-family:'Cinzel',serif;font-size:.6rem;letter-spacing:.4em;color:var(--gold);text-transform:uppercase;margin-bottom:14px;opacity:0;animation:fi .8s ease .5s forwards}
+.n-title{font-family:'Cinzel',serif;font-size:clamp(1.8rem,5vw,3rem);font-weight:900;color:#fff;line-height:1.1;margin-bottom:10px;opacity:0;animation:fi 1s ease 1s forwards;text-shadow:0 0 40px rgba(201,168,76,.5)}
+.n-sub{font-family:'Cinzel',serif;font-size:.72rem;letter-spacing:.2em;color:var(--purple);text-transform:uppercase;margin-bottom:32px;opacity:0;animation:fi .8s ease 1.8s forwards}
+.n-tribs{display:flex;flex-wrap:wrap;justify-content:center;gap:22px;margin-bottom:28px}
+.n-trib{opacity:0;animation:su 1s ease forwards;display:flex;flex-direction:column;align-items:center;gap:7px;min-width:86px}
+.n-av{width:62px;height:62px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;font-size:1rem;font-weight:900;color:#050408;box-shadow:0 0 28px var(--nc),0 0 56px rgba(0,0,0,.5)}
+.n-img{width:62px;height:62px;border-radius:50%;object-fit:cover;border:2px solid var(--nc);box-shadow:0 0 28px var(--nc)}
+.n-name{font-family:'Cinzel',serif;font-size:.78rem;font-weight:700;color:#fff}
+.n-zone{font-size:.62rem;color:var(--purple)}
+.n-day{font-family:'Cinzel',serif;font-size:.62rem;letter-spacing:.25em;color:#4a3870;text-transform:uppercase;margin-bottom:24px;opacity:0;animation:fi .8s ease 3s forwards}
+.n-dismiss{background:none;border:1px solid #3a2868;color:#6050a0;font-family:'Cinzel',serif;font-size:.58rem;letter-spacing:.2em;padding:7px 22px;cursor:pointer;text-transform:uppercase;opacity:0;animation:fi .8s ease 3.5s forwards}
+.n-dismiss:hover{color:var(--purple);border-color:#5040a0}
+.n-bar{height:3px;background:var(--red);position:absolute;bottom:0;left:0;animation:shrink 5s linear forwards}
+.n-play{font-size:.66rem;color:#e87040;margin-top:7px;display:none}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div>
+    <div class="htitle">THE CONVERSION</div>
+    <div class="hseason" id="hseason">Season 2 · The Depths · Week 1 · Wed–Tue</div>
+  </div>
+  <div class="hstats">
+    <div class="hstat"><div class="hstat-v" id="h-day">1</div><div class="hstat-l">Day</div></div>
+    <div class="hstat"><div class="hstat-v" id="h-alive">16</div><div class="hstat-l">Alive</div></div>
+    <div class="hstat"><div class="hstat-v" id="h-fall">8</div><div class="hstat-l">Fallen</div></div>
+    <div class="hstat"><div class="hstat-v" id="h-ally">0</div><div class="hstat-l">Alliances</div></div>
+  </div>
+  <div class="hlive"><div class="ldot"></div>LIVE</div>
+</div>
+
+<div id="map-wrap">
+  <div id="map-cont">
+    <svg id="map" viewBox="0 0 520 512" xmlns="http://www.w3.org/2000/svg"></svg>
+  </div>
+  <div class="zoom-ctrl">
+    <button class="zbtn" id="zin">+</button>
+    <button class="zbtn" id="zout">−</button>
+    <button class="zbtn" id="zrst" style="font-size:.75rem">⊙</button>
+  </div>
+  <div class="zhint">Scroll or pinch to zoom · Drag to pan · Click zones or tokens</div>
+</div>
+
+<!-- Tribute Panel -->
+<div class="spanel" id="trib-panel">
+  <div class="sp-head">
+    <div class="sp-bar"></div>
+    <span class="sp-title">Tribute Roster</span>
+    <button class="sp-close" id="trib-close">✕</button>
+  </div>
+  <div class="sp-body">
+    <div class="tscroll" id="tscroll"></div>
+    <div class="fallen-r" id="fallen-r"><div class="fallen-h">⚰ Fallen Tributes</div></div>
+  </div>
+</div>
+
+<!-- Events Panel -->
+<div class="spanel" id="ev-panel">
+  <div class="sp-head">
+    <div class="sp-bar"></div>
+    <span class="sp-title">Arena Events</span>
+    <button class="sp-close" id="ev-close">✕</button>
+  </div>
+  <div class="sp-body" id="ev-body"></div>
+</div>
+
+<!-- Player Modal -->
+<div class="ov" id="p-modal">
+  <div class="modal">
+    <button class="xbtn" id="modal-close">✕</button>
+    <div class="m-head">
+      <div id="m-av"></div>
+      <div class="m-info">
+        <div class="m-name" id="m-name"></div>
+        <div class="m-zone" id="m-zone"></div>
+        <div class="m-badges" id="m-badges"></div>
+      </div>
+    </div>
+    <div class="m-bars">
+      <div class="m-bar-r"><div class="m-bar-top"><span class="m-bar-lbl">🍖 Food</span><span class="m-bar-pct" id="mf-p"></span></div><div class="m-track"><div class="m-fill food" id="mf-b"></div></div></div>
+      <div class="m-bar-r"><div class="m-bar-top"><span class="m-bar-lbl">💧 Water</span><span class="m-bar-pct" id="mw-p"></span></div><div class="m-track"><div class="m-fill water" id="mw-b"></div></div></div>
+      <div class="m-bar-r"><div class="m-bar-top"><span class="m-bar-lbl">😴 Sleep</span><span class="m-bar-pct" id="ms-p"></span></div><div class="m-track"><div class="m-fill sleep" id="ms-b"></div></div></div>
+    </div>
+    <div class="m-stats">
+      <div class="mstat"><div class="mstat-v" id="m-alp"></div><div class="mstat-l">Battle ALP</div></div>
+      <div class="mstat"><div class="mstat-v" id="m-opp"></div><div class="mstat-l">Vs This Week</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- Zone Panel -->
+<div class="zov" id="z-ov">
+  <div class="zpanel">
+    <div id="z-photo"></div>
+    <div class="zhead">
+      <div class="znum" id="z-num"></div>
+      <div style="flex:1"><div class="zname" id="z-name"></div><div class="zflavor" id="z-flavor"></div></div>
+      <button class="xbtn" style="position:static;margin-left:auto" id="z-close">✕</button>
+    </div>
+    <div class="zbonus" id="z-bonus">
+      <div class="zbonus-lbl">Battle Bonus</div>
+      <div class="zbonus-txt" id="z-btxt"></div>
+      <div class="zbonus-note" id="z-bnote"></div>
+    </div>
+    <div class="ztribs">
+      <div class="ztribs-lbl">Tributes in this zone</div>
+      <div class="ztrib-list" id="z-tribs"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Cannon -->
+<div class="cannon" id="cannon">
+  <div class="cannon-skull">💀</div>
+  <div class="cannon-title">Cannon Shot</div>
+  <div class="cannon-name" id="c-name"></div>
+  <div class="cannon-cause" id="c-cause"></div>
+  <div class="cannon-bar"></div>
+</div>
+
+<!-- Battle -->
+<div class="bov" id="b-ov">
+  <div class="bpanel">
+    <div class="bpanel-head">
+      <div class="bpanel-title" id="b-title">⚔️ Battle Week</div>
+      <button class="xbtn" style="position:static;color:var(--purple)" id="b-close">✕ Close</button>
+    </div>
+    <div class="matchups" id="matchups"></div>
+  </div>
+</div>
+
+<!-- Gamemaker -->
+<div class="gm-panel" id="gm-panel">
+  <div class="gm-head">
+    <div class="gm-title">👁 Gamemaker</div>
+    <button class="xbtn" style="position:static;color:var(--purple)" id="gm-close">✕</button>
+  </div>
+  <div id="gm-lock">
+    <div class="pin-wrap">
+      <div class="pin-title">Gamemaker Access</div>
+      <div class="pin-sub">Enter your 4-digit PIN</div>
+      <input class="pin-inp" id="pin-inp" type="password" maxlength="4" placeholder="····">
+      <button class="pin-btn" id="pin-submit">Unlock</button>
+      <div class="pin-err" id="pin-err">Wrong PIN</div>
+    </div>
+  </div>
+  <div id="gm-ctrl" style="display:none" class="gm-body">
+    <div class="gm-sec">
+      <div class="gm-sec-t">💀 Cannon Shot</div>
+      <select class="gm-sel" id="gm-player"><option value="">— Select tribute —</option></select>
+      <select class="gm-sel" id="gm-cause">
+        <option>Water bar fully depleted</option>
+        <option>Food bar fully depleted</option>
+        <option>Sleep bar fully depleted</option>
+        <option>Lost a battle — eliminated</option>
+        <option>Alliance betrayal</option>
+      </select>
+      <button class="gm-act gm-red" id="gm-fire">🔫 Fire Cannon Shot</button>
+    </div>
+    <div class="gm-sec">
+      <div class="gm-sec-t">⚡ Arena Events</div>
+      <button class="gm-act gm-purple" data-ev="🌫️ FOG ROLLS IN — All tributes in zones 1–3 lose 10% Water unless they book 2 same-day appointments today">Fog Rolls In</button>
+      <button class="gm-act gm-red" data-ev="🐺 MUTT ATTACK — The tribute in last place faces a KPI survival challenge in the next 24 hours">Mutt Attack</button>
+      <button class="gm-act gm-gold" data-ev="🏆 CORNUCOPIA DROP — First tribute to hit 400 dials today earns +30% to their lowest bar">Cornucopia Drop</button>
+      <button class="gm-act gm-purple" data-ev="🐝 TRACKER JACKERS — A random tribute loses 20% Sleep this round">Tracker Jackers</button>
+      <button class="gm-act gm-gold" data-ev="🎪 THE FEAST — All tributes drawn to The Great Maw. Open battles 24 hours. Double bounties active">The Feast</button>
+      <button class="gm-act gm-green" data-ev="⚡ DOUBLE DIAL DAY — All sets count double for movement today!">Double Dial Day</button>
+    </div>
+    <div class="gm-sec">
+      <div class="gm-sec-t">🌙 Nightly</div>
+      <button class="gm-act gm-gold" id="gm-nightly">Preview Nightly Announcement</button>
+    </div>
+    <div class="gm-sec">
+      <div class="gm-sec-t">🃏 Advantage Card</div>
+      <select class="gm-sel" id="gm-card-p"><option value="">— Select tribute —</option></select>
+      <button class="gm-act gm-gold" id="gm-card">Reveal Card</button>
+    </div>
+    <div class="gm-sec">
+      <div class="gm-sec-t">🗺️ View</div>
+      <button class="gm-act gm-purple" id="gm-bmode">Open Battle Mode</button>
+    </div>
+  </div>
+</div>
+
+<!-- Nightly Announcement -->
+<div class="nightly" id="nightly">
+  <div class="nstars" id="nstars"></div>
+  <div class="n-inner">
+    <div class="n-eye">The Conversion · Season 2: The Depths</div>
+    <div class="n-title">TONIGHT'S<br>CANNON SHOTS</div>
+    <div class="n-sub">The following tributes have fallen</div>
+    <div class="n-tribs" id="n-tribs"></div>
+    <div class="n-day" id="n-day"></div>
+    <div class="n-play" id="n-play">🔊 Tap to enable music</div>
+    <button class="n-dismiss" id="n-dismiss">Click to dismiss</button>
+  </div>
+  <audio id="n-audio" loop></audio>
+  <div class="n-bar"></div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <div class="toast-title">⚡ GAMEMAKER EVENT</div>
+  <div class="toast-msg" id="toast-msg"></div>
+</div>
+
+<!-- Control Bar -->
+<div class="ctrl">
+  <button class="cbtn cb-t" id="ctrl-tribs">👥 Tributes <span class="cb-cnt" id="alive-cnt">16</span></button>
+  <button class="cbtn cb-b" id="ctrl-battle">⚔️ Battle Week</button>
+  <button class="cbtn cb-g" id="ctrl-gm">👁 Gamemaker</button>
+  <button class="cbtn cb-e" id="ctrl-events">📜 Events</button>
+</div>
+
+<script>
+/* START_GAME_DATA */
+var GD = {
+  tributeMusic:"tribute_music.m4a",
+  day:4,week:1,alive:16,fallen:8,alliances:0,
+  weekStart:"Wed",weekEnd:"Tue",pin:"1984",
+  players:[
+    {id:1,name:"Laura Barnes",ini:"LB",zone:7,status:"alive",food:80,water:100,sleep:100,ally:"AGL",color:"#e8c95a",alp:"$0",opp:"Rachel Ezieme Woods",photo:"",eliminatedDate:""},
+    {id:2,name:"Rachel Ezieme Woods",ini:"RE",zone:"maw",status:"alive",food:80,water:75,sleep:100,ally:"",color:"#50e898",alp:"$0",opp:"Laura Barnes",photo:"",eliminatedDate:""},
+    {id:3,name:"Ashley Peterson",ini:"AP",zone:8,status:"alive",food:15,water:45,sleep:100,ally:"SA",color:"#5898e8",alp:"$0",opp:"Bernardo Holguin",photo:"",eliminatedDate:""},
+    {id:4,name:"Bernardo Holguin",ini:"BH",zone:2,status:"alive",food:55,water:25,sleep:100,ally:"BR",color:"#e85858",alp:"$0",opp:"Ashley Peterson",photo:"",eliminatedDate:""},
+    {id:5,name:"Guadalupe Sullivan",ini:"GS",zone:1,status:"alive",food:65,water:25,sleep:100,ally:"AGL",color:"#e88050",alp:"$1,951",opp:"Amber Bringer",photo:"",eliminatedDate:""},
+    {id:6,name:"Amber Bringer",ini:"AB",zone:"maw",status:"alive",food:70,water:100,sleep:100,ally:"The Syndicate",color:"#b058e8",alp:"$0",opp:"Guadalupe Sullivan",photo:"",eliminatedDate:""},
+    {id:7,name:"Kimberly Recinos",ini:"KR",zone:12,status:"eliminated",food:30,water:0,sleep:100,ally:"The Syndicate",color:"#58e870",alp:"$0",opp:"Mishelle Bradford",photo:"",eliminatedDate:"Sat Aug 08 2026"},
+    {id:8,name:"Mishelle Bradford",ini:"MB",zone:"maw",status:"alive",food:40,water:100,sleep:100,ally:"The Syndicate",color:"#e8d050",alp:"$0",opp:"Kimberly Recinos",photo:"",eliminatedDate:""},
+    {id:9,name:"Sash Odintsov",ini:"SO",zone:4,status:"alive",food:85,water:5,sleep:100,ally:"SA",color:"#40c8e8",alp:"$0",opp:"Sidney Moore",photo:"",eliminatedDate:""},
+    {id:10,name:"Sidney Moore",ini:"SM",zone:"maw",status:"alive",food:100,water:100,sleep:100,ally:"The Bucks",color:"#e870b8",alp:"$961",opp:"Sash Odintsov",photo:"",eliminatedDate:""},
+    {id:11,name:"Bobby Murphy",ini:"BM",zone:"maw",status:"alive",food:100,water:100,sleep:100,ally:"The Bucks",color:"#a0e858",alp:"$2,580",opp:"Kelly Atkinson",photo:"",eliminatedDate:""},
+    {id:12,name:"Kelly Atkinson",ini:"KA",zone:9,status:"eliminated",food:30,water:0,sleep:100,ally:"",color:"#e89050",alp:"$0",opp:"Bobby Murphy",photo:"",eliminatedDate:"Sat Aug 08 2026"},
+    {id:13,name:"Amanda Rodriguez",ini:"AR",zone:11,status:"alive",food:100,water:20,sleep:100,ally:"AGL",color:"#8058e8",alp:"$0",opp:"Anthony Navarro",photo:"",eliminatedDate:""},
+    {id:14,name:"Anthony Navarro",ini:"AN",zone:1,status:"eliminated",food:55,water:50,sleep:100,ally:"",color:"#e84878",alp:"$0",opp:"Amanda Rodriguez",photo:"",eliminatedDate:"Sat Aug 08 2026"},
+    {id:15,name:"Sergio Haro",ini:"SH",zone:"maw",status:"eliminated",food:40,water:25,sleep:100,ally:"",color:"#40e8c0",alp:"$0",opp:"Raymond Cencepcion",photo:"",eliminatedDate:"Sat Aug 08 2026"},
+    {id:16,name:"Raymond Cencepcion",ini:"RC",zone:2,status:"alive",food:50,water:85,sleep:100,ally:"BR",color:"#e8a830",alp:"$0",opp:"Sergio Haro",photo:"",eliminatedDate:""},
+    {id:17,name:"Melissa Cape",ini:"MC",zone:"maw",status:"alive",food:80,water:50,sleep:100,ally:"The Bucks",color:"#6090e8",alp:"$1,729",opp:"Nagi Abouhassein",photo:"",eliminatedDate:""},
+    {id:18,name:"Nagi Abouhassein",ini:"NA",zone:"maw",status:"eliminated",food:70,water:50,sleep:100,ally:"",color:"#d0e840",alp:"$0",opp:"Melissa Cape",photo:"",eliminatedDate:"Sat Aug 08 2026"},
+    {id:19,name:"Tyler Ledden",ini:"TL",zone:"maw",status:"eliminated",food:40,water:25,sleep:100,ally:"JT",color:"#e86040",alp:"$0",opp:"Jesus Martinez Leyva",photo:"",eliminatedDate:"Sat Aug 08 2026"},
+    {id:20,name:"Jesus Martinez Leyva",ini:"JM",zone:4,status:"alive",food:25,water:25,sleep:100,ally:"JT",color:"#40e880",alp:"$0",opp:"Tyler Ledden",photo:"",eliminatedDate:""},
+    {id:21,name:"Rawaa Sabry",ini:"RS",zone:6,status:"alive",food:100,water:25,sleep:100,ally:"",color:"#e840c0",alp:"$0",opp:"Charmane Orr",photo:"",eliminatedDate:""},
+    {id:22,name:"Charmane Orr",ini:"CO",zone:5,status:"alive",food:70,water:75,sleep:100,ally:"",color:"#40a0e8",alp:"$392",opp:"Rawaa Sabry",photo:"",eliminatedDate:""},
+    {id:23,name:"John Franke",ini:"JF",zone:"maw",status:"eliminated",food:55,water:25,sleep:100,ally:"",color:"#e8e040",alp:"$0",opp:"Athena Moore",photo:"",eliminatedDate:"Sat Aug 08 2026"},
+    {id:24,name:"Athena Moore",ini:"AM",zone:"maw",status:"eliminated",food:55,water:25,sleep:100,ally:"",color:"#a040e8",alp:"$0",opp:"John Franke",photo:"",eliminatedDate:"Sat Aug 08 2026"}
+  ],
+  battles:[
+    {type:"individual",p1:"Laura Barnes",       p1c:"#e8c95a",p1alp:0,p2:"Rachel Ezieme Woods", p2c:"#50e898",p2alp:0},
+    {type:"individual",p1:"Ashley Peterson",    p1c:"#5898e8",p1alp:0,p2:"Bernardo Holguin",       p2c:"#e85858",p2alp:0},
+    {type:"individual",p1:"Guadalupe Sullivan", p1c:"#e88050",p1alp:1951,p2:"Amber Bringer",        p2c:"#b058e8",p2alp:0},
+    {type:"individual",p1:"Kimberly Recinos",   p1c:"#58e870",p1alp:0,p2:"Mishelle Bradford",    p2c:"#e8d050",p2alp:0},
+    {type:"individual",p1:"Sash Odintsov",      p1c:"#40c8e8",p1alp:0,p2:"Sidney Moore",         p2c:"#e870b8",p2alp:961},
+    {type:"individual",p1:"Bobby Murphy",       p1c:"#a0e858",p1alp:2580,p2:"Kelly Atkinson",       p2c:"#e89050",p2alp:0},
+    {type:"individual",p1:"Amanda Rodriguez",   p1c:"#8058e8",p1alp:0,p2:"Anthony Navarro",      p2c:"#e84878",p2alp:0},
+    {type:"individual",p1:"Sergio Haro",        p1c:"#40e8c0",p1alp:0,p2:"Raymond Cencepcion",   p2c:"#e8a830",p2alp:0},
+    {type:"individual",p1:"Melissa Cape",       p1c:"#6090e8",p1alp:1729,p2:"Nagi Abouhassein",     p2c:"#d0e840",p2alp:0},
+    {type:"individual",p1:"Tyler Ledden",       p1c:"#e86040",p1alp:0,p2:"Jesus Martinez Leyva", p2c:"#40e880",p2alp:0},
+    {type:"individual",p1:"Rawaa Sabry",        p1c:"#e840c0",p1alp:0,p2:"Charmane Orr",         p2c:"#40a0e8",p2alp:392},
+    {type:"individual",p1:"John Franke",        p1c:"#e8e040",p1alp:0,p2:"Athena Moore",         p2c:"#a040e8",p2alp:0}
+  ],
+  events:[{type:"kill",text:"Sergio Haro's water bar fully depleted. Cannon shot fires. Sergio is eliminated.",time:"Day 4"},{type:"kill",text:"Tyler Ledden's water bar fully depleted. Cannon shot fires. Tyler is eliminated.",time:"Day 4"},{type:"kill",text:"John Franke died of thirst. Cannon shot fires. John is eliminated.",time:"Day 4"},{type:"kill",text:"Athena Moore died of thirst. Cannon shot fires. Athena is eliminated.",time:"Day 4"},{type:"kill",text:"Anthony Navarro lost his battle. Cannon shot fires. Anthony is eliminated.",time:"Day 4"},{type:"battle",text:"Amanda Rodriguez lost her battle. All life bars drop to 20%. Amanda retreats to The Great Maw.",time:"Day 4"},{type:"move",text:"The Bucks (Bobby, Melissa, Sidney) move to The Great Maw. Melissa and Sidney gain +10% Food from zone bonus.",time:"Day 4"},{type:"heal",text:"Bobby Murphy and Melissa Cape gain +15% Food.",time:"Day 4"},{type:"move",text:"Ashley Peterson moves to Bone Passage and claims 30% of Kelly Atkinson's remaining Food.",time:"Day 4"},{type:"move",text:"Charmane Orr moves to Lava Flows. Raymond Cencepcion moves to Echo Chamber.",time:"Day 4"},{type:"heal",text:"Rachel Ezieme Woods claims Anthony Navarro's resources — Food 55%, Water 50%.",time:"Day 4"},{type:"battle",text:"Sash Odintsov and Ashley Peterson form an alliance.",time:"Day 4"},{type:"kill",text:"Kelly Atkinson's water bar fully depleted. Cannon shot fires. Kelly is eliminated.",time:"Day 4"},{type:"kill",text:"Kimberly Recinos's water bar fully depleted. Cannon shot fires. Kimberly is eliminated.",time:"Day 4"},{type:"kill",text:"Laura Barnes defeats Nagi Abouhassein in The Great Maw. Cannon shot fires. Nagi is eliminated from the game.",time:"Day 3"},{type:"move",text:"Laura Barnes moves to The Mycelium.",time:"Day 3"},{type:"move",text:"Bobby Murphy, Melissa Cape and Sidney Moore form The Bucks and move to Collapsed Tunnels.",time:"Day 3"},{type:"battle",text:"The Bucks (Bobby, Melissa, Sidney) challenge Kimberly Recinos. Battle pending resolution.",time:"Day 3"},{type:"move",text:"Kimberly Recinos, Mishelle Bradford and Amber Bringer form The Syndicate.",time:"Day 3"},{type:"move",text:"Amanda Rodriguez, Guadalupe Sullivan and Laura Barnes form an alliance.",time:"Day 3"},{type:"move",text:"Bernardo Holguin and Raymond Cencepcion form an alliance.",time:"Day 4"},{type:"move",text:"Bernardo Holguin moves to Echo Chamber. Raymond Cencepcion moves to Shadow Vaults.",time:"Day 4"},{type:"move",text:"Jesus Martinez Leyva moves to Sunken Pit. Rawaa Sabry moves to Underground River.",time:"Day 4"},{type:"move",text:"Anthony Navarro moves to Crystal Spires. Guadalupe Sullivan moves to Crystal Spires.",time:"Day 4"}],
+  zonePhotos:{}
+};
+/* END_GAME_DATA */
+
+var NODES=[
+  {id:"maw",num:"★",label:["The Great","Maw"],     x:252,y:228,fill:"#4a3000",stroke:"#c9a030",tc:"#f0d060",r:28,isCenter:true},
+  {id:1, num:1, label:["Crystal","Spires"],          x:138,y:85, fill:"#0a1e3a",stroke:"#1e5082",tc:"#60c0f0",r:22},
+  {id:2, num:2, label:["Echo","Chamber"],            x:272,y:60, fill:"#1c1032",stroke:"#40288a",tc:"#c090f8",r:22},
+  {id:3, num:3, label:["Shadow","Vaults"],           x:400,y:90, fill:"#100822",stroke:"#2a145e",tc:"#b088f0",r:22},
+  {id:4, num:4, label:["Sunken","Pit"],              x:60, y:205,fill:"#081a22",stroke:"#104272",tc:"#50a8e8",r:22},
+  {id:5, num:5, label:["Lava","Flows"],              x:420,y:198,fill:"#3c0e04",stroke:"#8c2808",tc:"#f06840",r:22},
+  {id:6, num:6, label:["Under-","ground River"],     x:65, y:320,fill:"#08142a",stroke:"#103872",tc:"#5090e0",r:22},
+  {id:7, num:7, label:["The","Mycelium"],            x:170,y:390,fill:"#0a1c08",stroke:"#1c4a18",tc:"#70e050",r:22},
+  {id:8, num:8, label:["Flooded","Grotto"],          x:322,y:385,fill:"#061822",stroke:"#0e4a6a",tc:"#40b8d8",r:22},
+  {id:9, num:9, label:["Bone","Passage"],            x:425,y:308,fill:"#201a08",stroke:"#4a3a20",tc:"#d0b870",r:22},
+  {id:10,num:10,label:["The","Void"],                x:460,y:408,fill:"#060408",stroke:"#1c0e3a",tc:"#9870e8",r:22},
+  {id:11,num:11,label:["Root","Labyrinth"],          x:250,y:458,fill:"#180e06",stroke:"#3a1a08",tc:"#e0a040",r:22},
+  {id:12,num:12,label:["Collapsed","Tunnels"],       x:62, y:452,fill:"#101008",stroke:"#2a2018",tc:"#c8c090",r:22}
+];
+
+var EDGES=[["maw",1],["maw",2],["maw",4],["maw",5],["maw",8],
+  [1,2],[1,4],[2,3],[3,5],[4,6],[5,9],[6,7],[6,12],[7,8],[7,11],[8,9],[8,11],[9,10],[11,12]];
+
+var ZONE_INFO={
+  "maw":{name:"The Great Maw",flavor:"Maximum danger, maximum reward.",bonus:"🃏 +1 Advantage Card — win OR lose",note:"The only zone where both players leave with something.",color:"#c9a84c",bg:"#3a2800"},
+  1:{name:"Crystal Spires",flavor:"Bioluminescent crystals filter the underground water.",bonus:"💧 +10% Water restored — if you WIN",note:"Victory here is refreshing. Defeat is just cold.",color:"#60c0f0",bg:"#0a1e3a"},
+  2:{name:"Echo Chamber",flavor:"Sound carries everywhere. Nothing stays private.",bonus:"👁 Opponent must reveal all health bar percentages before battle",note:"Know exactly what you are walking into.",color:"#c090f8",bg:"#1c1032"},
+  3:{name:"Shadow Vaults",flavor:"Deep shadow. Easy to hide — no edge if found.",bonus:"⚖️ Standard rules — no modifier",note:"Safe hiding spot but no advantage here.",color:"#b088f0",bg:"#100822"},
+  4:{name:"Sunken Pit",flavor:"The earth has swallowed this chamber whole.",bonus:"⚖️ Standard rules — no modifier",note:"Solid position with no drawbacks or perks.",color:"#50a8e8",bg:"#081a22"},
+  5:{name:"Lava Flows",flavor:"The heat is punishing. Everyone pays a price.",bonus:"🍖 Opponent takes -10% Food — regardless of outcome",note:"Even if you lose you cost your opponent something.",color:"#f06840",bg:"#3c0e04"},
+  6:{name:"Underground River",flavor:"Cold fast water. Survival is possible but uncomfortable.",bonus:"⚖️ Standard rules — no modifier",note:"A common pass-through zone.",color:"#5090e0",bg:"#08142a"},
+  7:{name:"The Mycelium",flavor:"Glowing fungi feed the patient and the strong.",bonus:"🍖 +10% Food restored — if you WIN",note:"The victorious eat well here.",color:"#70e050",bg:"#0a1c08"},
+  8:{name:"Flooded Grotto",flavor:"Hidden pools of remarkably pure water.",bonus:"💧 +10% Water restored — if you WIN",note:"Control this zone and water concerns ease.",color:"#40b8d8",bg:"#061822"},
+  9:{name:"Bone Passage",flavor:"Narrow corridor. Reaction beats strategy here.",bonus:"⚡ First sale of the week wins — ALP does not matter",note:"Speed over volume. One sale any size and it is over.",color:"#d0b870",bg:"#201a08"},
+  10:{name:"The Void",flavor:"There is no escape. Losing here is catastrophic.",bonus:"☠️ If you LOSE — DOUBLE resource damage on all bars",note:"The deadliest place to take a battle.",color:"#9870e8",bg:"#060408"},
+  11:{name:"Root Labyrinth",flavor:"Ancient roots form walls. Getting out takes time.",bonus:"⚖️ Standard rules — no modifier",note:"Near dead-end. Connected to Mycelium and Collapsed Tunnels.",color:"#e0a040",bg:"#180e06"},
+  12:{name:"Collapsed Tunnels",flavor:"Barely accessible. Gamemakers struggle to reach here.",bonus:"🛡 Immune to all Gamemaker arena events this week",note:"Cannot be targeted by fog, mutts, or feast events.",color:"#c8c090",bg:"#101008"}
+};
+
+var CARDS=["Steal 10% Water from any tribute","Immunity from one disadvantage trigger","Move 1 space free — no sets needed","Block one incoming challenge for 24 hours","Restore 25% Food instantly","Force an opponent into your current zone","Double next sale ALP for resource purposes","Peek at any tribute's three health bars"];
+
+// ── INIT HEADER ──
+document.getElementById("h-day").textContent   = GD.day;
+document.getElementById("h-alive").textContent = GD.alive;
+document.getElementById("h-fall").textContent  = GD.fallen;
+document.getElementById("h-ally").textContent  = GD.alliances;
+document.getElementById("hseason").textContent = "Season 2 · The Depths · Week "+GD.week+" · "+GD.weekStart+"–"+GD.weekEnd;
+document.getElementById("alive-cnt").textContent = GD.alive;
+
+// ── HELPERS ──
+function getNode(id){ return NODES.find(function(n){return n.id===id||n.id===parseInt(id);})||null; }
+function zoneName(id){ if(id==="maw")return "The Great Maw"; var n=getNode(id); return n?n.label.join(" "):"—"; }
+function makeIni(name){ return name.split(" ").map(function(w){return w[0]||"";}).join("").slice(0,2).toUpperCase()||"?"; }
+function parseAlp(s){ return parseInt((s||"0").replace(/[^0-9]/g,""))||0; }
+
+function makeAv(p,size){
+  var s=size==="lg"?50:36;
+  var cls=size==="lg"?"m-av-img":"tc-img";
+  var fcls=size==="lg"?"m-av":"tc-av";
+  var mc=size==="lg"?"--mc":"--tc";
+  if(p.photo){
+    return '<img src="'+p.photo+'" class="'+cls+'" style="'+mc+':'+p.color+'" alt="'+p.name+'" onerror="this.style.display=\'none\'">';
+  }
+  return '<div class="'+fcls+'" style="background:'+p.color+';'+mc+':'+p.color+'">'+makeIni(p.name)+"</div>";
+}
+
+// ── ZOOM / PAN ──
+var sc=1,tx=0,ty=0,mdown=false,dragged=false,lmx=0,lmy=0;
+var wrap=document.getElementById("map-wrap");
+var cont=document.getElementById("map-cont");
+function applyT(){ cont.style.transform="translate("+tx+"px,"+ty+"px) scale("+sc+")"; }
+function zoomAt(delta,cx,cy){
+  var ns=Math.min(Math.max(sc*delta,0.35),6);
+  tx=cx-(cx-tx)*(ns/sc); ty=cy-(cy-ty)*(ns/sc); sc=ns; applyT();
+}
+function fitMap(){
+  var w=wrap.clientWidth,h=wrap.clientHeight,fs=Math.min(w/520,h/512)*0.95;
+  sc=fs; tx=(w-520*fs)/2; ty=(h-512*fs)/2; applyT();
+}
+document.getElementById("zin").addEventListener("click",function(e){e.stopPropagation();var r=wrap.getBoundingClientRect();zoomAt(1.25,r.width/2,r.height/2);});
+document.getElementById("zout").addEventListener("click",function(e){e.stopPropagation();var r=wrap.getBoundingClientRect();zoomAt(0.8,r.width/2,r.height/2);});
+document.getElementById("zrst").addEventListener("click",function(e){e.stopPropagation();fitMap();});
+wrap.addEventListener("wheel",function(e){e.preventDefault();var r=wrap.getBoundingClientRect();zoomAt(e.deltaY>0?0.9:1.1,e.clientX-r.left,e.clientY-r.top);},{passive:false});
+wrap.addEventListener("mousedown",function(e){if(e.target.closest(".zoom-ctrl"))return;mdown=true;dragged=false;lmx=e.clientX;lmy=e.clientY;wrap.style.cursor="grabbing";});
+window.addEventListener("mousemove",function(e){if(!mdown)return;var dx=e.clientX-lmx,dy=e.clientY-lmy;if(Math.abs(dx)+Math.abs(dy)>4)dragged=true;tx+=dx;ty+=dy;lmx=e.clientX;lmy=e.clientY;applyT();});
+window.addEventListener("mouseup",function(){mdown=false;wrap.style.cursor="";});
+var t1x=0,t1y=0,tDist=0;
+wrap.addEventListener("touchstart",function(e){if(e.touches.length===2){tDist=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);}else if(e.touches.length===1){t1x=e.touches[0].clientX;t1y=e.touches[0].clientY;dragged=false;}},{passive:true});
+wrap.addEventListener("touchmove",function(e){e.preventDefault();if(e.touches.length===2){var d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);var cx=(e.touches[0].clientX+e.touches[1].clientX)/2,cy=(e.touches[0].clientY+e.touches[1].clientY)/2;var r=wrap.getBoundingClientRect();zoomAt(d/tDist,cx-r.left,cy-r.top);tDist=d;}else if(e.touches.length===1){var dx=e.touches[0].clientX-t1x,dy=e.touches[0].clientY-t1y;if(Math.abs(dx)+Math.abs(dy)>5)dragged=true;tx+=dx;ty+=dy;t1x=e.touches[0].clientX;t1y=e.touches[0].clientY;applyT();}},{passive:false});
+
+// ── MAP BUILD ──
+function buildMap(){
+  var svg=document.getElementById("map");
+  var NS="http://www.w3.org/2000/svg";
+  function mk(tag,attrs,txt){var e=document.createElementNS(NS,tag);Object.keys(attrs).forEach(function(k){e.setAttribute(k,attrs[k]);});if(txt!=null)e.textContent=txt;return e;}
+  svg.appendChild(mk("rect",{x:0,y:0,width:520,height:512,fill:"#040307"}));
+  [["0,0 100,0 70,35 35,55 0,75"],["430,0 520,0 520,90 482,65 448,28"],["0,435 0,512 85,512 62,480 18,455"],["445,512 520,512 520,422 492,445 462,480"]].forEach(function(a){svg.appendChild(mk("polygon",{points:a[0],fill:"#09070e",opacity:"0.9"}));});
+  for(var i=0;i<9;i++){var bx=25+i*60,h=8+Math.sin(i*1.7+1)*7;svg.appendChild(mk("polygon",{points:(bx-5)+",0 "+(bx+5)+",0 "+bx+","+h,fill:"#0e0c1c"}));}
+  for(var j=0;j<6;j++){var bx2=40+j*88,h2=6+Math.sin(j*2.1)*5;svg.appendChild(mk("polygon",{points:(bx2-4)+",512 "+(bx2+4)+",512 "+bx2+","+(512-h2),fill:"#0e0c1c"}));}
+  [[140,320,25,"#1050a0"],[340,150,20,"#402880"],[400,400,18,"#0e4868"]].forEach(function(g){svg.appendChild(mk("circle",{cx:g[0],cy:g[1],r:g[2],fill:g[3],opacity:"0.07"}));});
+  EDGES.forEach(function(e){
+    var a=getNode(e[0]),b=getNode(e[1]);if(!a||!b)return;
+    var mx=(a.x+b.x)/2,my=(a.y+b.y)/2,dx=b.x-a.x,dy=b.y-a.y,len=Math.sqrt(dx*dx+dy*dy)||1,off=len*0.09;
+    svg.appendChild(mk("path",{d:"M"+a.x+","+a.y+" Q"+(mx+(-dy/len)*off)+","+(my+(dx/len)*off)+" "+b.x+","+b.y,fill:"none",stroke:"#28204a","stroke-width":"2","stroke-dasharray":"5 3.5"}));
+  });
+  var byZone={};
+  GD.players.filter(function(p){return p.status!=="eliminated"&&p.zone!=null;}).forEach(function(p){if(!byZone[p.zone])byZone[p.zone]=[];byZone[p.zone].push(p);});
+  NODES.forEach(function(node){
+    var x=node.x,y=node.y,fill=node.fill,stroke=node.stroke,tc=node.tc,r=node.r,id=node.id,isCenter=node.isCenter;
+    svg.appendChild(mk("circle",{cx:x,cy:y,r:r+14,fill:fill,opacity:"0.18"}));
+    svg.appendChild(mk("circle",{cx:x,cy:y,r:r+8,fill:"none",stroke:stroke,"stroke-width":"1",opacity:"0.2"}));
+    var hit=mk("circle",{cx:x,cy:y,r:r,fill:fill,stroke:stroke,"stroke-width":"2"});
+    hit.style.cursor="pointer";
+    (function(nid){hit.addEventListener("click",function(e){e.stopPropagation();if(dragged)return;openZone(nid);});})(id);
+    svg.appendChild(hit);
+    svg.appendChild(mk("text",{x:x,y:y+(isCenter?5:4),"text-anchor":"middle",fill:tc,"font-family":"Cinzel,serif","font-size":isCenter?"14":"11","font-weight":"900"},String(node.num)));
+    node.label.forEach(function(ln,li){svg.appendChild(mk("text",{x:x,y:(y+r+10)+li*9,"text-anchor":"middle",fill:tc,"font-family":"Rajdhani,sans-serif","font-size":"7.5","font-weight":"700","letter-spacing":"0.5",opacity:"0.95"},ln));});
+    var zps=byZone[id]||[];
+    zps.forEach(function(p,pi){
+      var TR=9,px,py;
+      var total=zps.length;
+      if(total===1){px=x;py=y-r-2;}
+      else{
+        var ang=(pi/total)*Math.PI*2-Math.PI/2;
+        var dist=r+14;
+        px=x+Math.cos(ang)*dist; py=y+Math.sin(ang)*dist;
+      }
+      if(p.ally)svg.appendChild(mk("circle",{cx:px,cy:py,r:TR+2.5,fill:"none",stroke:p.color,"stroke-width":"1.2","stroke-dasharray":"2.5 2",opacity:"0.6"}));
+      if(p.status==="injured")svg.appendChild(mk("circle",{cx:px,cy:py,r:TR+4,fill:p.color,opacity:"0.12"}));
+      svg.appendChild(mk("circle",{cx:px,cy:py,r:TR,fill:p.color,stroke:"#040307","stroke-width":"1.5"}));
+      svg.appendChild(mk("text",{x:px,y:py+3.5,"text-anchor":"middle",fill:"#050408","font-family":"Cinzel,serif","font-size":"6","font-weight":"900"},makeIni(p.name)));
+      if(p.status==="injured")svg.appendChild(mk("text",{x:px+TR-1,y:py-TR+5,"text-anchor":"middle",fill:"#e02800","font-size":"8","font-weight":"900"},"!"));
+      var guard=mk("circle",{cx:px,cy:py,r:TR,fill:"transparent"});guard.style.cursor="pointer";
+      (function(player){guard.addEventListener("click",function(e){e.stopPropagation();if(dragged)return;openModal(player);});})(p);
+      svg.appendChild(guard);
+    });
+  });
+  svg.appendChild(mk("text",{x:8,y:505,"font-family":"Rajdhani,sans-serif","font-size":"7.5",fill:"#5040a0","letter-spacing":"0.3"},"★ Great Maw = Cornucopia  ╌╌ = tunnel  tokens = live tributes  ! = injured"));
+}
+
+// ── TRIBUTE PANEL ──
+function renderTributes(){
+  var sc2=document.getElementById("tscroll"),fr=document.getElementById("fallen-r");
+  var alive=GD.players.filter(function(p){return p.status!=="eliminated";});
+  var elim=GD.players.filter(function(p){return p.status==="eliminated";});
+  alive.sort(function(a,b){var o={alive:16,injured:1};return(o[a.status]||0)-(o[b.status]||0);});
+  sc2.innerHTML=alive.map(function(p){
+    var sb=p.status==="alive"?"st-alive":"st-injured";
+    var sl=p.status==="alive"?"ALIVE":"⚠ INJURED";
+    var idx=GD.players.indexOf(p);
+    function mbar(cls,pct){return '<div class="tc-bar-r"><div class="tc-bar-l">'+(cls==="f"?"F":cls==="w"?"W":"Z")+'</div><div class="tc-bar-t"><div class="tc-bar-f tb'+cls+(pct<30?" tb-dng":"")+'" style="width:'+pct+'%"></div></div></div>';}
+    return '<div class="tc '+p.status+'" style="--tc:'+p.color+'" onclick="if(\''+p.status+'\'!==\'eliminated\')openModal(GD.players['+idx+'])">'+
+      makeAv(p,"sm")+'<div class="tc-name">'+p.name+'</div><span class="tc-st '+sb+'">'+sl+'</span>'+
+      '<div class="tc-bars">'+mbar("f",p.food)+mbar("w",p.water)+mbar("s",p.sleep)+'</div></div>';
+  }).join("");
+  fr.innerHTML='<div class="fallen-h">⚰ Fallen Tributes</div>'+elim.map(function(p){return '<div class="fchip">'+p.name+"</div>";}).join("");
+  document.getElementById("alive-cnt").textContent=alive.length;
+}
+
+// ── EVENTS PANEL ──
+function renderEvents(){
+  var dc={kill:"#c84848",move:"#5878d0",heal:"#4898a8",battle:"#c09050"};
+  document.getElementById("ev-body").innerHTML=[].concat(GD.events).reverse().map(function(e){
+    return '<div class="ev-it"><div class="ev-dot" style="background:'+(dc[e.type]||"#888")+'"></div><div><div class="ev-txt">'+e.text+'</div><div class="ev-time">['+e.time+']</div></div></div>';
+  }).join("");
+}
+
+// ── PANELS ──
+function openPanel(id){["trib-panel","ev-panel"].forEach(function(p){document.getElementById(p).classList.remove("open");});document.getElementById(id).classList.add("open");}
+function closePanel(id){document.getElementById(id).classList.remove("open");}
+document.getElementById("ctrl-tribs").addEventListener("click",function(){renderTributes();openPanel("trib-panel");});
+document.getElementById("ctrl-events").addEventListener("click",function(){renderEvents();openPanel("ev-panel");});
+document.getElementById("trib-close").addEventListener("click",function(){closePanel("trib-panel");});
+document.getElementById("ev-close").addEventListener("click",function(){closePanel("ev-panel");});
+
+// ── PLAYER MODAL ──
+function openModal(p){
+  if(p.status==="eliminated")return;
+  document.getElementById("p-modal").classList.add("open");
+  document.getElementById("m-av").innerHTML=makeAv(p,"lg");
+  document.getElementById("m-name").textContent=p.name;
+  document.getElementById("m-zone").textContent=p.zone!=null?"Zone · "+zoneName(p.zone):"—";
+  document.getElementById("m-badges").innerHTML=(p.ally?'<span class="badge b-ally">◆ Alliance '+p.ally+"</span>":"")+
+    '<span class="badge '+(p.status==="alive"?"b-alive":"b-injured")+'">'+(p.status==="alive"?"ALIVE":"⚠ INJURED")+"</span>";
+  [["f","food"],["w","water"],["s","sleep"]].forEach(function(pair){
+    var pct=p[pair[1]];
+    document.getElementById("m"+pair[0]+"-p").textContent=pct+"%";
+    var bar=document.getElementById("m"+pair[0]+"-b");
+    bar.className="m-fill "+pair[1]+(pct<30?" dng":"");
+    bar.style.width="0%";
+    setTimeout(function(){bar.style.width=pct+"%";},50);
+  });
+  document.getElementById("m-alp").textContent=p.alp||"—";
+  document.getElementById("m-opp").textContent=p.opp||"—";
+}
+function closeModal(){document.getElementById("p-modal").classList.remove("open");}
+document.getElementById("modal-close").addEventListener("click",closeModal);
+document.getElementById("p-modal").addEventListener("click",function(e){if(e.target===this)closeModal();});
+
+// ── ZONE PANEL ──
+function openZone(id){
+  var data=ZONE_INFO[id]||ZONE_INFO[parseInt(id)];
+  var node=getNode(id);if(!data||!node)return;
+  document.getElementById("z-num").textContent=node.num;
+  document.getElementById("z-num").style.background=data.bg;
+  document.getElementById("z-num").style.color=data.color;
+  document.getElementById("z-name").textContent=data.name;
+  document.getElementById("z-flavor").textContent=data.flavor;
+  document.getElementById("z-btxt").textContent=data.bonus;
+  document.getElementById("z-bnote").textContent=data.note;
+  document.getElementById("z-bonus").style.setProperty("--bc",data.color);
+  var zp=(GD.zonePhotos||{})[String(id)]||(GD.zonePhotos||{})[parseInt(id)];
+  document.getElementById("z-photo").innerHTML=zp?'<img src="'+zp+'" class="zphoto" alt="'+data.name+'">':"<div class=\"znophoto\">🌑</div>";
+  var tps=GD.players.filter(function(p){return p.status!=="eliminated"&&(p.zone===id||p.zone===parseInt(id)||(id==="maw"&&p.zone==="maw"));});
+  document.getElementById("z-tribs").innerHTML=tps.length===0?'<span class="znobody">No tributes here</span>':
+    tps.map(function(p){var idx=GD.players.indexOf(p);return'<div class="ztrib-chip" onclick="closeZone();setTimeout(function(){openModal(GD.players['+idx+'])},200)"><div class="zdot" style="background:'+p.color+'"></div><div class="ztrib-name">'+p.name+"</div></div>";}).join("");
+  document.getElementById("z-ov").classList.add("open");
+}
+function closeZone(){document.getElementById("z-ov").classList.remove("open");}
+document.getElementById("z-close").addEventListener("click",closeZone);
+document.getElementById("z-ov").addEventListener("click",function(e){if(e.target===this)closeZone();});
+
+// ── CANNON ──
+var cTimer=null;
+function fireCannon(){
+  var player=document.getElementById("gm-player").value;
+  var cause=document.getElementById("gm-cause").value;
+  if(!player)return;
+  document.getElementById("c-name").textContent=player;
+  document.getElementById("c-cause").textContent=cause;
+  var c=document.getElementById("cannon");c.classList.add("go");
+  var bar=c.querySelector(".cannon-bar");bar.style.animation="none";void bar.offsetWidth;bar.style.animation="shrink 5s linear forwards";
+  if(cTimer)clearTimeout(cTimer);cTimer=setTimeout(function(){c.classList.remove("go");},5200);
+  closeGM();
+}
+document.getElementById("cannon").addEventListener("click",function(){if(cTimer)clearTimeout(cTimer);this.classList.remove("go");});
+document.getElementById("gm-fire").addEventListener("click",fireCannon);
+
+// ── BATTLE ──
+function openBattle(){
+  document.getElementById("b-title").textContent="⚔️ Battle Week "+GD.week+" · "+GD.weekStart+"–"+GD.weekEnd;
+  document.getElementById("matchups").innerHTML=GD.battles.map(function(b){
+    if(b.type==="alliance"){
+      var a1=b.ally1||"?",a2=b.ally2||"?";
+      var m1=GD.players.filter(function(p){return p.ally===a1&&p.status!=="eliminated";});
+      var m2=GD.players.filter(function(p){return p.ally===a2&&p.status!=="eliminated";});
+      var alp1=m1.reduce(function(s,p){return s+parseAlp(p.alp);},0);
+      var alp2=m2.reduce(function(s,p){return s+parseAlp(p.alp);},0);
+      var win=alp1>alp2?"A":(alp2>alp1?"B":"");
+      var mkList=function(ms){return ms.map(function(p){return'<div style="display:flex;align-items:center;gap:4px;margin-bottom:2px"><div style="width:7px;height:7px;border-radius:50%;background:'+p.color+'"></div><span style="font-size:.62rem;color:#c0b8d8">'+p.name+"</span></div>";}).join("");};
+      return '<div class="matchup ally-matchup"><div class="mu-p"><div class="mu-av" style="background:#c9a84c;font-size:.62rem">◆ '+a1+'</div><div class="mu-name">Alliance '+a1+'</div><div style="margin:3px 0">'+mkList(m1)+'</div><div class="mu-alp">Combined: $'+alp1.toLocaleString()+' ALP</div>'+(win==="A"?'<div class="mu-win">🏆 LEADING</div>':"")+'</div><div class="mu-vs">VS</div><div class="mu-p"><div class="mu-av" style="background:#9070d0;font-size:.62rem">◆ '+a2+'</div><div class="mu-name">Alliance '+a2+'</div><div style="margin:3px 0">'+mkList(m2)+'</div><div class="mu-alp">Combined: $'+alp2.toLocaleString()+' ALP</div>'+(win==="B"?'<div class="mu-win">🏆 LEADING</div>':"")+"</div></div>";
+    }
+    var win2=b.p1alp>b.p2alp?b.p1:(b.p2alp>b.p1alp?b.p2:"");
+    return '<div class="matchup"><div class="mu-p"><div class="mu-av" style="background:'+(b.p1c||"#888")+'">'+makeIni(b.p1||"?")+'</div><div class="mu-name">'+(b.p1||"—")+'</div><div class="mu-alp">$'+((b.p1alp||0).toLocaleString())+' ALP</div>'+(win2===b.p1?'<div class="mu-win">🏆 LEADING</div>':"")+'</div><div class="mu-vs">VS</div><div class="mu-p"><div class="mu-av" style="background:'+(b.p2c||"#888")+'">'+makeIni(b.p2||"?")+'</div><div class="mu-name">'+(b.p2||"—")+'</div><div class="mu-alp">'+(b.p2==="BYE"?"—":"$"+((b.p2alp||0).toLocaleString())+" ALP")+'</div>'+(win2===b.p2?'<div class="mu-win">🏆 LEADING</div>':"")+"</div></div>";
+  }).join("");
+  document.getElementById("b-ov").classList.add("open");
+}
+function closeBattle(){document.getElementById("b-ov").classList.remove("open");}
+document.getElementById("ctrl-battle").addEventListener("click",openBattle);
+document.getElementById("b-close").addEventListener("click",closeBattle);
+document.getElementById("b-ov").addEventListener("click",function(e){if(e.target===this)closeBattle();});
+
+// ── GAMEMAKER ──
+var gmUnlocked=false;
+function openGM(){document.getElementById("gm-panel").classList.add("open");}
+function closeGM(){document.getElementById("gm-panel").classList.remove("open");}
+function checkPin(){
+  if(document.getElementById("pin-inp").value===GD.pin){
+    gmUnlocked=true;
+    document.getElementById("gm-lock").style.display="none";
+    document.getElementById("gm-ctrl").style.display="block";
+    var sel=document.getElementById("gm-player"),csel=document.getElementById("gm-card-p");
+    GD.players.filter(function(p){return p.status!=="eliminated";}).forEach(function(p){
+      var o=document.createElement("option");o.value=p.name;o.textContent=p.name;sel.appendChild(o);
+      var o2=document.createElement("option");o2.value=p.name;o2.textContent=p.name;csel.appendChild(o2);
+    });
+  } else {
+    document.getElementById("pin-err").style.display="block";
+    document.getElementById("pin-inp").value="";
+    setTimeout(function(){document.getElementById("pin-err").style.display="none";},2000);
+  }
+}
+document.getElementById("ctrl-gm").addEventListener("click",openGM);
+document.getElementById("gm-close").addEventListener("click",closeGM);
+document.getElementById("pin-submit").addEventListener("click",checkPin);
+document.getElementById("pin-inp").addEventListener("keyup",function(e){if(e.key==="Enter")checkPin();});
+document.getElementById("gm-bmode").addEventListener("click",function(){closeGM();openBattle();});
+document.getElementById("gm-card").addEventListener("click",function(){
+  var p=document.getElementById("gm-card-p").value;if(!p)return;
+  showToast("🃏 "+p+' draws: "'+CARDS[Math.floor(Math.random()*CARDS.length)]+'"');closeGM();
+});
+document.querySelectorAll(".gm-act[data-ev]").forEach(function(btn){
+  btn.addEventListener("click",function(){showToast(this.dataset.ev);closeGM();});
+});
+
+// ── TOAST ──
+function showToast(msg){document.getElementById("toast-msg").textContent=msg;var t=document.getElementById("toast");t.style.display="block";setTimeout(function(){t.style.display="none";},8000);}
+document.getElementById("toast").addEventListener("click",function(){this.style.display="none";});
+
+// ── NIGHTLY ANNOUNCEMENT ──
+function makeStars(){
+  var c=document.getElementById("nstars");
+  for(var i=0;i<60;i++){
+    var s=document.createElement("div");s.className="nstar";
+    var sz=Math.random()*2.5+0.5;
+    s.style.cssText="width:"+sz+"px;height:"+sz+"px;background:"+(Math.random()>0.85?"#c9a84c":"#fff")+";left:"+(Math.random()*100)+"%;top:"+(Math.random()*100)+"%;--d:"+(Math.random()*3+2)+"s;--dl:"+(-Math.random()*4)+"s";
+    c.appendChild(s);
+  }
+}
+
+function showNightly(fallen){
+  makeStars();
+  var pdt=new Date(new Date().toLocaleString("en-US",{timeZone:"America/Los_Angeles"}));
+  document.getElementById("n-day").textContent="Day "+GD.day+" · Season 2: The Depths";
+  var tc=document.getElementById("n-tribs");
+  tc.innerHTML=fallen.length===0?'<div style="color:#6050a0;font-family:Cinzel,serif;font-size:.9rem;letter-spacing:.1em">No tributes fell today</div>':
+    fallen.map(function(p,i){
+      var av=p.photo?'<img class="n-img" style="--nc:'+p.color+'" src="'+p.photo+'" alt="'+p.name+'">'
+        :'<div class="n-av" style="background:'+p.color+';--nc:'+p.color+'">'+makeIni(p.name)+"</div>";
+      return '<div class="n-trib" style="animation-delay:'+(i*1.6+2.5)+'s">'+av+'<div class="n-name">'+p.name+'</div><div class="n-zone">'+zoneName(p.zone||"maw")+'</div></div>';
+    }).join("");
+  var ov=document.getElementById("nightly");ov.classList.add("go");
+  if(GD.tributeMusic){
+    var au=document.getElementById("n-audio");au.src=GD.tributeMusic;au.volume=0.75;
+    au.play().catch(function(){
+      document.getElementById("n-play").style.display="block";
+      ov.addEventListener("click",function pl(){au.play();document.getElementById("n-play").style.display="none";ov.removeEventListener("click",pl);},{once:true});
+    });
+  }
+}
+function closeNightly(){var ov=document.getElementById("nightly");ov.classList.remove("go");var au=document.getElementById("n-audio");au.pause();au.currentTime=0;}
+document.getElementById("n-dismiss").addEventListener("click",closeNightly);
+document.getElementById("gm-nightly").addEventListener("click",function(){var f=GD.players.filter(function(p){return p.status==="eliminated";});closeGM();showNightly(f);});
+var nightlyFired="";
+setInterval(function(){
+  var pdt=new Date(new Date().toLocaleString("en-US",{timeZone:"America/Los_Angeles"}));
+  var h=pdt.getHours(),m=pdt.getMinutes(),today=pdt.toDateString();
+  if(h===21&&m===30&&nightlyFired!==today){nightlyFired=today;var f=GD.players.filter(function(p){return p.status==="eliminated"&&p.eliminatedDate===today;});showNightly(f);}
+  if(h===0&&m<1)nightlyFired="";
+},30000);
+
+// ── START ──
+buildMap();
+fitMap();
+
+// ── AUTO DAY COUNTER ──────────────────────────────────
+// After 9:30 PM PST each day, increment the day display
+// Uses the same timer loop as the nightly announcement
+function checkDayRollover() {
+  var pdt = new Date(new Date().toLocaleString("en-US", {timeZone:"America/Los_Angeles"}));
+  var h = pdt.getHours(), m = pdt.getMinutes();
+  var today = pdt.toDateString();
+  var storageKey = "tc_day_rolled_" + today;
+
+  // After 9:30 PM — increment display day once per calendar day
+  if (h >= 21 && m >= 30) {
+    if (!sessionStorage.getItem(storageKey)) {
+      sessionStorage.setItem(storageKey, "1");
+      GD.day = GD.day + 1;
+      document.getElementById("h-day").textContent = GD.day;
+    }
+  }
+}
+checkDayRollover(); // run immediately on load
+setInterval(checkDayRollover, 60000); // then check every minute
+// ── END AUTO DAY COUNTER ──────────────────────────────
+
+</script>
+</body>
+</html>
