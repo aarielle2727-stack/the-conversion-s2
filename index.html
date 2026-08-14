@@ -309,6 +309,20 @@ body{background:var(--cave);color:var(--text);font-family:'Rajdhani',sans-serif;
 .m-card-text{font-size:.75rem;color:var(--gold2);line-height:1.4;font-family:'Rajdhani',sans-serif;font-weight:600}
 .m-no-cards{font-size:.72rem;color:var(--purple);font-style:italic}
 
+
+/* ── SPONSORS PANEL ── */
+.sponsor-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;padding:4px 2px}
+.sponsor-card{background:#0e0a14;border:1px solid var(--gold);padding:14px 16px;display:flex;flex-direction:column;gap:6px}
+.sponsor-name{font-family:'Cinzel',serif;font-size:.82rem;font-weight:700;color:var(--gold2)}
+.sponsor-gifts{display:flex;align-items:center;gap:6px}
+.sponsor-gift-count{font-family:'Cinzel',serif;font-size:1.4rem;font-weight:900;color:var(--gold)}
+.sponsor-gift-label{font-size:.62rem;color:var(--purple);letter-spacing:.1em;text-transform:uppercase}
+.sponsor-gems{display:flex;gap:4px;flex-wrap:wrap}
+.sponsor-gem{font-size:1.1rem;cursor:pointer;transition:transform .15s}
+.sponsor-gem:hover{transform:scale(1.2)}
+.sponsor-gem.used{opacity:.25;filter:grayscale(1)}
+.sponsor-empty{font-size:.72rem;color:var(--purple);font-style:italic}
+
 </style>
 </head>
 <body>
@@ -514,8 +528,23 @@ body{background:var(--cave);color:var(--text);font-family:'Rajdhani',sans-serif;
   <button class="cbtn cb-b" id="ctrl-battle">⚔️ Battle Week</button>
   <button class="cbtn cb-g" id="ctrl-gm">👁 Gamemaker</button>
   <button class="cbtn cb-e" id="ctrl-events">📜 Events</button>
+  <button class="cbtn" style="color:#c9a84c;border-color:#c9a84c" id="ctrl-sponsors">💎 Sponsors</button>
 </div>
 
+
+
+<!-- Sponsors Panel -->
+<div class="spanel" id="sponsor-panel">
+  <div class="sp-head">
+    <div class="sp-bar"></div>
+    <span class="sp-title">💎 Sponsors</span>
+    <button class="sp-close" id="sponsor-close">✕</button>
+  </div>
+  <div class="sp-body">
+    <div style="font-size:.68rem;color:var(--text2);margin-bottom:10px;line-height:1.5">Sponsors can send gifts to tributes — food, water, or resources. Click a gem to use a gift.</div>
+    <div class="sponsor-grid" id="sponsor-grid"></div>
+  </div>
+</div>
 
 <!-- Fog Event Overlay -->
 <div class="fog-ov" id="fog-ov" onclick="if(event.target===this)closeFog()">
@@ -564,42 +593,48 @@ var GD = {
   weekStart:"Wed",weekEnd:"Tue",pin:"1984",
   players:[
     {id:1,name:"Laura Barnes",ini:"LB",zone:7,status:"alive",food:60,water:75,sleep:20,ally:"AGL",color:"#e8c95a",alp:"$0",opp:"Rachel Ezieme Woods",photo:"",eliminatedDate:"",cards:2,cardNames:["Double next sale ALP for resource purposes","Steal 10% Water from any tribute"]},
-    {id:2,name:"Rachel Ezieme Woods",ini:"RE",zone:"maw",status:"alive",food:65,water:30,sleep:50,ally:"",color:"#50e898",alp:"$0",opp:"Laura Barnes",photo:"",eliminatedDate:"",cards:1,cardNames:["Move 1 space free — no sets needed"]},
-    {id:3,name:"Ashley Peterson",ini:"AP",zone:8,status:"alive",food:25,water:100,sleep:10,ally:"SA",color:"#5898e8",alp:"$0",opp:"Mishelle Bradford",photo:"",eliminatedDate:"",cards:1,cardNames:["Immunity from one disadvantage trigger"]},
+    {id:2,name:"Rachel Ezieme Woods",ini:"RE",zone:"maw",status:"alive",food:50,water:100,sleep:60,ally:"",color:"#50e898",alp:"$0",opp:"Laura Barnes",photo:"",eliminatedDate:"",cards:2,cardNames:["Move 1 space free — no sets needed","Immunity from one disadvantage trigger"]},
+    {id:3,name:"Ashley Peterson",ini:"AP",zone:12,status:"alive",food:25,water:100,sleep:30,ally:"SA",color:"#5898e8",alp:"$316",opp:"Mishelle Bradford",photo:"",eliminatedDate:"",cards:1,cardNames:["Immunity from one disadvantage trigger"]},
     {id:4,name:"Bernardo Holguin",ini:"BH",zone:2,status:"eliminated",food:55,water:25,sleep:100,ally:"BR",color:"#e85858",alp:"$0",opp:"Ashley Peterson",photo:"",eliminatedDate:"Sat Aug 08 2026",cards:0},
-    {id:5,name:"Guadalupe Sullivan",ini:"GS",zone:1,status:"alive",food:90,water:35,sleep:100,ally:"AGL",color:"#e88050",alp:"$1,951",opp:"Amanda Rodriguez",photo:"",eliminatedDate:"",cards:1,cardNames:["Restore 25% Food instantly"]},
-    {id:6,name:"Amber Bringer",ini:"AB",zone:"maw",status:"alive",food:45,water:5,sleep:100,ally:"The Syndicate",color:"#b058e8",alp:"$0",opp:"Melissa Cape",photo:"",eliminatedDate:"",cards:1,cardNames:["Double next sale ALP for resource purposes"]},
+    {id:5,name:"Guadalupe Sullivan",ini:"GS",zone:8,status:"alive",food:75,water:35,sleep:100,ally:"AGL",color:"#e88050",alp:"$1,951",opp:"Amanda Rodriguez",photo:"",eliminatedDate:"",cards:1,cardNames:["Restore 25% Food instantly"]},
+    {id:6,name:"Amber Bringer",ini:"AB",zone:"maw",status:"alive",food:60,water:5,sleep:100,ally:"The Syndicate",color:"#b058e8",alp:"$0",opp:"Melissa Cape",photo:"",eliminatedDate:"",cards:1,cardNames:["Double next sale ALP for resource purposes"]},
     {id:7,name:"Kimberly Recinos",ini:"KR",zone:12,status:"eliminated",food:30,water:0,sleep:100,ally:"The Syndicate",color:"#58e870",alp:"$0",opp:"Mishelle Bradford",photo:"",eliminatedDate:"Sat Aug 08 2026",cards:0},
     {id:8,name:"Mishelle Bradford",ini:"MB",zone:"maw",status:"eliminated",food:10,water:100,sleep:10,ally:"The Syndicate",color:"#e8d050",alp:"$0",opp:"Ashley Peterson",photo:"",eliminatedDate:"Mon Aug 11 2026",cards:1,cardNames:["Immunity from one disadvantage trigger"]},
-    {id:9,name:"Sash Odintsov",ini:"SO",zone:4,status:"alive",food:85,water:60,sleep:20,ally:"SA",color:"#40c8e8",alp:"$0",opp:"Sidney Moore",photo:"",eliminatedDate:"",cards:1,cardNames:["Peek at any tribute's three health bars"]},
-    {id:10,name:"Sidney Moore",ini:"SM",zone:"maw",status:"alive",food:100,water:100,sleep:100,ally:"The Bucks",color:"#e870b8",alp:"$961",opp:"Sash Odintsov",photo:"",eliminatedDate:"",cards:1,cardNames:["Block one incoming challenge for 24 hours"]},
-    {id:11,name:"Bobby Murphy",ini:"BM",zone:"maw",status:"alive",food:85,water:75,sleep:100,ally:"The Bucks",color:"#a0e858",alp:"$2,580",opp:"Charmane Orr",photo:"",eliminatedDate:"",cards:2,cardNames:["Block one incoming challenge for 24 hours","Move 1 space free — no sets needed"]},
+    {id:9,name:"Sash Odintsov",ini:"SO",zone:12,status:"alive",food:85,water:60,sleep:100,ally:"SA",color:"#40c8e8",alp:"$0",opp:"Sidney Moore",photo:"",eliminatedDate:"",cards:2,cardNames:["Peek at any tribute\'s three health bars","Force an opponent into your current zone"]},
+    {id:10,name:"Sidney Moore",ini:"SM",zone:8,status:"alive",food:100,water:100,sleep:100,ally:"The Bucks",color:"#e870b8",alp:"$1,457",opp:"Sash Odintsov",photo:"",eliminatedDate:"",cards:1,cardNames:["Block one incoming challenge for 24 hours"]},
+    {id:11,name:"Bobby Murphy",ini:"BM",zone:"maw",status:"alive",food:70,water:75,sleep:100,ally:"The Bucks",color:"#a0e858",alp:"$2,580",opp:"Charmane Orr",photo:"",eliminatedDate:"",cards:2,cardNames:["Block one incoming challenge for 24 hours","Move 1 space free — no sets needed"]},
     {id:12,name:"Kelly Atkinson",ini:"KA",zone:9,status:"eliminated",food:30,water:0,sleep:100,ally:"",color:"#e89050",alp:"$0",opp:"Bobby Murphy",photo:"",eliminatedDate:"Sat Aug 08 2026",cards:0},
-    {id:13,name:"Amanda Rodriguez",ini:"AR",zone:11,status:"alive",food:100,water:95,sleep:100,ally:"AGL",color:"#8058e8",alp:"$0",opp:"Guadalupe Sullivan",photo:"",eliminatedDate:"",cards:2,cardNames:["Block one incoming challenge for 24 hours","Restore 25% Food instantly"]},
+    {id:13,name:"Amanda Rodriguez",ini:"AR",zone:11,status:"alive",food:85,water:75,sleep:100,ally:"AGL",color:"#8058e8",alp:"$2,101",opp:"Guadalupe Sullivan",photo:"",eliminatedDate:"",cards:2,cardNames:["Block one incoming challenge for 24 hours","Restore 25% Food instantly"]},
     {id:14,name:"Anthony Navarro",ini:"AN",zone:1,status:"eliminated",food:55,water:50,sleep:100,ally:"",color:"#e84878",alp:"$0",opp:"Amanda Rodriguez",photo:"",eliminatedDate:"Sat Aug 08 2026",cards:0},
     {id:15,name:"Sergio Haro",ini:"SH",zone:"maw",status:"eliminated",food:40,water:25,sleep:100,ally:"",color:"#40e8c0",alp:"$0",opp:"Raymond Cencepcion",photo:"",eliminatedDate:"Sat Aug 08 2026",cards:0},
-    {id:16,name:"Raymond Cencepcion",ini:"RC",zone:2,status:"alive",food:50,water:85,sleep:10,ally:"BR",color:"#e8a830",alp:"$0",opp:"BYE",photo:"",eliminatedDate:"",cards:1,cardNames:["Double next sale ALP for resource purposes"]},
-    {id:17,name:"Melissa Cape",ini:"MC",zone:"maw",status:"alive",food:65,water:25,sleep:100,ally:"The Bucks",color:"#6090e8",alp:"$1,729",opp:"Amber Bringer",photo:"",eliminatedDate:"",cards:1,cardNames:["Block one incoming challenge for 24 hours"]},
+    {id:16,name:"Raymond Cencepcion",ini:"RC",zone:5,status:"alive",food:35,water:60,sleep:10,ally:"BR",color:"#e8a830",alp:"$0",opp:"BYE",photo:"",eliminatedDate:"",cards:1,cardNames:["Double next sale ALP for resource purposes"]},
+    {id:17,name:"Melissa Cape",ini:"MC",zone:"maw",status:"alive",food:50,water:100,sleep:100,ally:"The Bucks",color:"#6090e8",alp:"$1,729",opp:"Amber Bringer",photo:"",eliminatedDate:"",cards:1,cardNames:["Block one incoming challenge for 24 hours"]},
     {id:18,name:"Nagi Abouhassein",ini:"NA",zone:"maw",status:"eliminated",food:70,water:50,sleep:100,ally:"",color:"#d0e840",alp:"$0",opp:"Melissa Cape",photo:"",eliminatedDate:"Sat Aug 08 2026",cards:0},
     {id:19,name:"Tyler Ledden",ini:"TL",zone:"maw",status:"eliminated",food:40,water:25,sleep:100,ally:"JT",color:"#e86040",alp:"$0",opp:"Jesus Martinez Leyva",photo:"",eliminatedDate:"Sat Aug 08 2026",cards:0},
     {id:20,name:"Jesus Martinez Leyva",ini:"JM",zone:4,status:"eliminated",food:10,water:25,sleep:100,ally:"JT",color:"#40e880",alp:"$0",opp:"Rawaa Sabry",photo:"",eliminatedDate:"Mon Aug 11 2026",cards:1,cardNames:["Force an opponent into your current zone"]},
-    {id:21,name:"Rawaa Sabry",ini:"RS",zone:6,status:"alive",food:75,water:80,sleep:10,ally:"CR",color:"#e840c0",alp:"$0",opp:"Jesus Martinez Leyva",photo:"",eliminatedDate:"",cards:1,cardNames:["Block one incoming challenge for 24 hours"]},
-    {id:22,name:"Charmane Orr",ini:"CO",zone:5,status:"alive",food:40,water:25,sleep:50,ally:"CR",color:"#40a0e8",alp:"$392",opp:"Bobby Murphy",photo:"",eliminatedDate:"",cards:1,cardNames:["Double next sale ALP for resource purposes"]},
+    {id:21,name:"Rawaa Sabry",ini:"RS",zone:"maw",status:"alive",food:100,water:100,sleep:10,ally:"CR",color:"#e840c0",alp:"$2,780",opp:"Jesus Martinez Leyva",photo:"",eliminatedDate:"",cards:1,cardNames:["Block one incoming challenge for 24 hours"]},
+    {id:22,name:"Charmane Orr",ini:"CO",zone:5,status:"alive",food:100,water:75,sleep:50,ally:"CR",color:"#40a0e8",alp:"$1,823",opp:"Bobby Murphy",photo:"",eliminatedDate:"",cards:1,cardNames:["Double next sale ALP for resource purposes"]},
     {id:23,name:"John Franke",ini:"JF",zone:"maw",status:"eliminated",food:55,water:25,sleep:100,ally:"",color:"#e8e040",alp:"$0",opp:"Athena Moore",photo:"",eliminatedDate:"Sat Aug 08 2026",cards:0},
     {id:24,name:"Athena Moore",ini:"AM",zone:"maw",status:"eliminated",food:55,water:25,sleep:100,ally:"",color:"#a040e8",alp:"$0",opp:"John Franke",photo:"",eliminatedDate:"Sat Aug 08 2026",cards:0}
   ],
   battles:[
-    {type:"individual",p1:"Bobby Murphy",p1c:"#a0e858",p1alp:0,p2:"Charmane Orr",p2c:"#40a0e8",p2alp:0},
-    {type:"individual",p1:"Sidney Moore",p1c:"#e870b8",p1alp:0,p2:"Sash Odintsov",p2c:"#40c8e8",p2alp:0},
-    {type:"individual",p1:"Rawaa Sabry",p1c:"#e840c0",p1alp:0,p2:"Jesus Martinez Leyva",p2c:"#40e880",p2alp:0},
-    {type:"individual",p1:"Mishelle Bradford",p1c:"#e8d050",p1alp:0,p2:"Ashley Peterson",p2c:"#5898e8",p2alp:0},
-    {type:"individual",p1:"Amanda Rodriguez",p1c:"#8058e8",p1alp:0,p2:"Guadalupe Sullivan",p2c:"#e88050",p2alp:0},
+    {type:"individual",p1:"Bobby Murphy",p1c:"#a0e858",p1alp:0,p2:"Charmane Orr",p2c:"#40a0e8",p2alp:1823},
+    {type:"individual",p1:"Sidney Moore",p1c:"#e870b8",p1alp:1457,p2:"Guadalupe Sullivan",p2c:"#e88050",p2alp:0},
+    {type:"individual",p1:"Rawaa Sabry",p1c:"#e840c0",p1alp:2780,p2:"Jesus Martinez Leyva",p2c:"#40e880",p2alp:0},
+    {type:"individual",p1:"Mishelle Bradford",p1c:"#e8d050",p1alp:0,p2:"Ashley Peterson",p2c:"#5898e8",p2alp:316},
+    {type:"individual",p1:"Amanda Rodriguez",p1c:"#8058e8",p1alp:2101,p2:"Sash Odintsov",p2c:"#40c8e8",p2alp:0},
     {type:"individual",p1:"Amber Bringer",p1c:"#b058e8",p1alp:0,p2:"Melissa Cape",p2c:"#6090e8",p2alp:0},
     {type:"individual",p1:"Laura Barnes",p1c:"#e8c95a",p1alp:0,p2:"Rachel Ezieme Woods",p2c:"#50e898",p2alp:0},
     {type:"individual",p1:"Raymond Cencepcion",p1c:"#e8a830",p1alp:0,p2:"BYE",p2c:"#555555",p2alp:0}
   ],
-  events:[{type:"kill",text:"Mishelle Bradford's food bar fully depleted. Cannon shot fires. Mishelle dies of hunger.",time:"Day 9"},{type:"kill",text:"Jesus Martinez Leyva's food and water depleted. Cannon shot fires. Jesus dies of starvation and thirst.",time:"Day 9"},{type:"battle",text:"All tributes receive an Advantage Card. Laura Barnes, Bobby Murphy and Amanda Rodriguez each receive 2 Advantage Cards.",time:"Week 1 End"},{type:"battle",text:"Week 1 battles resolved. Week 2 matchups are set. Let the next round begin.",time:"Week 2 Start"},{type:"battle",text:"Rawaa Sabry challenges Bobby Murphy. Battle pending resolution.",time:"Day 4"},{type:"battle",text:"Rawaa Sabry challenges Sidney Moore. Battle pending resolution.",time:"Day 4"},{type:"kill",text:"Bernardo Holguin's water bar fully depleted. Cannon shot fires. Bernardo is eliminated.",time:"Day 4"},{type:"kill",text:"Sergio Haro's water bar fully depleted. Cannon shot fires. Sergio is eliminated.",time:"Day 4"},{type:"kill",text:"Tyler Ledden's water bar fully depleted. Cannon shot fires. Tyler is eliminated.",time:"Day 4"},{type:"kill",text:"John Franke died of thirst. Cannon shot fires. John is eliminated.",time:"Day 4"},{type:"kill",text:"Athena Moore died of thirst. Cannon shot fires. Athena is eliminated.",time:"Day 4"},{type:"kill",text:"Anthony Navarro lost his battle. Cannon shot fires. Anthony is eliminated.",time:"Day 4"},{type:"battle",text:"Amanda Rodriguez lost her battle. All life bars drop to 20%. Amanda retreats to The Great Maw.",time:"Day 4"},{type:"move",text:"The Bucks (Bobby, Melissa, Sidney) move to The Great Maw. Melissa and Sidney gain +10% Food from zone bonus.",time:"Day 4"},{type:"heal",text:"Bobby Murphy and Melissa Cape gain +15% Food.",time:"Day 4"},{type:"move",text:"Ashley Peterson moves to Bone Passage and claims 30% of Kelly Atkinson's remaining Food.",time:"Day 4"},{type:"move",text:"Charmane Orr moves to Lava Flows. Raymond Cencepcion moves to Echo Chamber.",time:"Day 4"},{type:"heal",text:"Rachel Ezieme Woods claims Anthony Navarro's resources — Food 55%, Water 50%.",time:"Day 4"},{type:"battle",text:"Sash Odintsov and Ashley Peterson form an alliance.",time:"Day 4"},{type:"kill",text:"Kelly Atkinson's water bar fully depleted. Cannon shot fires. Kelly is eliminated.",time:"Day 4"},{type:"kill",text:"Kimberly Recinos's water bar fully depleted. Cannon shot fires. Kimberly is eliminated.",time:"Day 4"},{type:"kill",text:"Laura Barnes defeats Nagi Abouhassein in The Great Maw. Cannon shot fires. Nagi is eliminated from the game.",time:"Day 3"},{type:"move",text:"Laura Barnes moves to The Mycelium.",time:"Day 3"},{type:"move",text:"Bobby Murphy, Melissa Cape and Sidney Moore form The Bucks and move to Collapsed Tunnels.",time:"Day 3"},{type:"battle",text:"The Bucks (Bobby, Melissa, Sidney) challenge Kimberly Recinos. Battle pending resolution.",time:"Day 3"},{type:"move",text:"Kimberly Recinos, Mishelle Bradford and Amber Bringer form The Syndicate.",time:"Day 3"},{type:"move",text:"Amanda Rodriguez, Guadalupe Sullivan and Laura Barnes form an alliance.",time:"Day 3"},{type:"move",text:"Bernardo Holguin and Raymond Cencepcion form an alliance.",time:"Day 4"},{type:"move",text:"Bernardo Holguin moves to Echo Chamber. Raymond Cencepcion moves to Shadow Vaults.",time:"Day 4"},{type:"move",text:"Jesus Martinez Leyva moves to Sunken Pit. Rawaa Sabry moves to Underground River.",time:"Day 4"},{type:"move",text:"Anthony Navarro moves to Crystal Spires. Guadalupe Sullivan moves to Crystal Spires.",time:"Day 4"}],
-  zonePhotos:{}
+  events:[{type:"battle",text:"Rawaa Sabry challenges Bobby Murphy. Battle pending resolution.",time:"Day 9"},{type:"battle",text:"Rawaa Sabry challenges Sidney Moore. Battle pending resolution.",time:"Day 9"},{type:"battle",text:"Sidney Moore challenges Guadalupe Sullivan. Battle pending resolution.",time:"Day 9"},{type:"kill",text:"Mishelle Bradford's food bar fully depleted. Cannon shot fires. Mishelle dies of hunger.",time:"Day 9"},{type:"kill",text:"Jesus Martinez Leyva's food and water depleted. Cannon shot fires. Jesus dies of starvation and thirst.",time:"Day 9"},{type:"battle",text:"All tributes receive an Advantage Card. Laura Barnes, Bobby Murphy and Amanda Rodriguez each receive 2 Advantage Cards.",time:"Week 1 End"},{type:"battle",text:"Week 1 battles resolved. Week 2 matchups are set. Let the next round begin.",time:"Week 2 Start"},{type:"battle",text:"Rawaa Sabry challenges Bobby Murphy. Battle pending resolution.",time:"Day 4"},{type:"battle",text:"Rawaa Sabry challenges Sidney Moore. Battle pending resolution.",time:"Day 4"},{type:"kill",text:"Bernardo Holguin's water bar fully depleted. Cannon shot fires. Bernardo is eliminated.",time:"Day 4"},{type:"kill",text:"Sergio Haro's water bar fully depleted. Cannon shot fires. Sergio is eliminated.",time:"Day 4"},{type:"kill",text:"Tyler Ledden's water bar fully depleted. Cannon shot fires. Tyler is eliminated.",time:"Day 4"},{type:"kill",text:"John Franke died of thirst. Cannon shot fires. John is eliminated.",time:"Day 4"},{type:"kill",text:"Athena Moore died of thirst. Cannon shot fires. Athena is eliminated.",time:"Day 4"},{type:"kill",text:"Anthony Navarro lost his battle. Cannon shot fires. Anthony is eliminated.",time:"Day 4"},{type:"battle",text:"Amanda Rodriguez lost her battle. All life bars drop to 20%. Amanda retreats to The Great Maw.",time:"Day 4"},{type:"move",text:"The Bucks (Bobby, Melissa, Sidney) move to The Great Maw. Melissa and Sidney gain +10% Food from zone bonus.",time:"Day 4"},{type:"heal",text:"Bobby Murphy and Melissa Cape gain +15% Food.",time:"Day 4"},{type:"move",text:"Ashley Peterson moves to Bone Passage and claims 30% of Kelly Atkinson's remaining Food.",time:"Day 4"},{type:"move",text:"Charmane Orr moves to Lava Flows. Raymond Cencepcion moves to Echo Chamber.",time:"Day 4"},{type:"heal",text:"Rachel Ezieme Woods claims Anthony Navarro's resources — Food 55%, Water 50%.",time:"Day 4"},{type:"battle",text:"Sash Odintsov and Ashley Peterson form an alliance.",time:"Day 4"},{type:"kill",text:"Kelly Atkinson's water bar fully depleted. Cannon shot fires. Kelly is eliminated.",time:"Day 4"},{type:"kill",text:"Kimberly Recinos's water bar fully depleted. Cannon shot fires. Kimberly is eliminated.",time:"Day 4"},{type:"kill",text:"Laura Barnes defeats Nagi Abouhassein in The Great Maw. Cannon shot fires. Nagi is eliminated from the game.",time:"Day 3"},{type:"move",text:"Laura Barnes moves to The Mycelium.",time:"Day 3"},{type:"move",text:"Bobby Murphy, Melissa Cape and Sidney Moore form The Bucks and move to Collapsed Tunnels.",time:"Day 3"},{type:"battle",text:"The Bucks (Bobby, Melissa, Sidney) challenge Kimberly Recinos. Battle pending resolution.",time:"Day 3"},{type:"move",text:"Kimberly Recinos, Mishelle Bradford and Amber Bringer form The Syndicate.",time:"Day 3"},{type:"move",text:"Amanda Rodriguez, Guadalupe Sullivan and Laura Barnes form an alliance.",time:"Day 3"},{type:"move",text:"Bernardo Holguin and Raymond Cencepcion form an alliance.",time:"Day 4"},{type:"move",text:"Bernardo Holguin moves to Echo Chamber. Raymond Cencepcion moves to Shadow Vaults.",time:"Day 4"},{type:"move",text:"Jesus Martinez Leyva moves to Sunken Pit. Rawaa Sabry moves to Underground River.",time:"Day 4"},{type:"move",text:"Anthony Navarro moves to Crystal Spires. Guadalupe Sullivan moves to Crystal Spires.",time:"Day 4"}],
+  zonePhotos:{},
+  sponsors:[
+    {name:"Jade Welty",gifts:1},
+    {name:"Andrew McQuade",gifts:2},
+    {name:"Jimmy DePetro",gifts:2},
+    {name:"Paul Samra",gifts:3}
+  ]
 };
 /* END_GAME_DATA */
 
@@ -767,7 +802,7 @@ function renderEvents(){
 }
 
 // ── PANELS ──
-function openPanel(id){["trib-panel","ev-panel"].forEach(function(p){document.getElementById(p).classList.remove("open");});document.getElementById(id).classList.add("open");}
+function openPanel(id){["trib-panel","ev-panel","sponsor-panel"].forEach(function(p){document.getElementById(p).classList.remove("open");});document.getElementById(id).classList.add("open");}
 function closePanel(id){document.getElementById(id).classList.remove("open");}
 document.getElementById("ctrl-tribs").addEventListener("click",function(){renderTributes();openPanel("trib-panel");});
 document.getElementById("ctrl-events").addEventListener("click",function(){renderEvents();openPanel("ev-panel");});
@@ -954,6 +989,46 @@ setInterval(function(){
 },30000);
 
 // ── START ──
+
+// ── SPONSORS ─────────────────────────────────────────────
+function renderSponsors(){
+  var grid=document.getElementById("sponsor-grid");
+  if(!grid||!GD.sponsors)return;
+  grid.innerHTML=GD.sponsors.map(function(s,si){
+    var gems="";
+    if(s.gifts===0){
+      gems='<div class="sponsor-empty">No gifts remaining</div>';
+    } else {
+      for(var i=0;i<s.gifts;i++){
+        gems+='<span class="sponsor-gem" title="Use gift" onclick="useGift('+si+')">💎</span>';
+      }
+    }
+    return '<div class="sponsor-card">'+
+      '<div class="sponsor-name">'+s.name+'</div>'+
+      '<div class="sponsor-gifts">'+
+        '<div class="sponsor-gift-count">'+s.gifts+'</div>'+
+        '<div class="sponsor-gift-label">gift'+(s.gifts===1?'':'s')+' remaining</div>'+
+      '</div>'+
+      '<div class="sponsor-gems">'+gems+'</div>'+
+    '</div>';
+  }).join("");
+}
+
+function useGift(sponsorIdx){
+  var s=GD.sponsors[sponsorIdx];
+  if(s.gifts<=0){showToast("⚠ "+s.name+" has no gifts remaining!");return;}
+  s.gifts--;
+  renderSponsors();
+  showToast("💎 "+s.name+" used a gift! ("+s.gifts+" remaining)");
+}
+
+document.getElementById("ctrl-sponsors").addEventListener("click",function(){
+  renderSponsors();
+  openPanel("sponsor-panel");
+});
+document.getElementById("sponsor-close").addEventListener("click",function(){closePanel("sponsor-panel");});
+// ── END SPONSORS ──────────────────────────────────────────
+
 buildMap();
 fitMap();
 
